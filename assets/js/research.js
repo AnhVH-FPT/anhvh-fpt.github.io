@@ -331,7 +331,7 @@
       ['dir', 'Direction', null, (x, v) => x.dirs.includes(v)],
       ['dl', 'Deadline', () => monthOpts([['any', 'Any month'], ['soon', 'Next 3 months']]), (x, v) => v === 'soon' ? x.dl.some(m => soon.has(m)) : x.dl.includes(+v)],
       ['held', 'Held in', () => monthOpts([['any', 'Any month']]), (x, v) => x.held.includes(+v)],
-      ['fmt', 'Presentation', () => [['any', 'Any'], ['online', 'Online possible'], ['onsite', 'In person only']], (x, v) => /yes/i.test(x.hybrid) === (v === 'online')],
+      ['fmt', 'Presentation', () => [['any', 'Any'], ['online', 'Hybrid'], ['onsite', 'In Person']], (x, v) => /yes/i.test(x.hybrid) === (v === 'online')],
       ['fee', 'Regular fee', () => [['any', 'Any fee'], ...[400, 600, 800, 1000].map(n => [String(n), `Up to ≈ USD ${n.toLocaleString('en-US')}`])], (x, v) => x.feeReg <= +v],
     ],
     jour: [
@@ -424,7 +424,7 @@
           <td data-label="Rank">${rankBadge(r)}</td>
           <td data-label="Deadline">${esc(r.deadline) || '–'}</td>
           <td data-label="Held in">${esc(r.heldText) || '–'}</td>
-          <td data-label="Presentation">${/yes/i.test(r.hybrid) ? '<span class="badge published">Online possible</span>' : '<span class="badge thesis">In person</span>'}</td>
+          <td data-label="Presentation">${/yes/i.test(r.hybrid) ? '<span class="badge published">Hybrid</span>' : '<span class="badge thesis">In Person</span>'}</td>
           <td data-label="Fee" class="fee">${feeHtml(r.feeText)}</td></tr>`).join('')}</tbody></table>`;
     } else {
       $('#venueBox').innerHTML = `<table class="vt"><thead><tr>${th('Journal', 'name')}${th('Publisher', 'publisher')}${th('Rank', 'rank')}${th('Time to publish', 'ttp')}${th('Publication fee', 'fee')}</tr></thead><tbody>${
