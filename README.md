@@ -41,7 +41,6 @@ python3 -m http.server 8000   # then visit http://localhost:8000
 ## Customize
 
 - **Avatar**: save a square photo (at least 480x480 px) as `assets/img/avatar.png`. The initials placeholder disappears automatically.
-- **GitHub and LinkedIn**: search `YOUR_USERNAME` in `index.html` and replace it (two places each).
 - **Publications and projects**: edit `data/database.xlsx` (see the next section). No HTML or JavaScript changes are needed.
 - **Colors and fonts**: change the CSS variables in `:root` and `:root[data-theme=dark]` at the top of `assets/css/style.css`.
 - **Prospective students section**: the text in `#join` is a draft. Edit the topics, benefits and requirements to match your group.
@@ -64,7 +63,7 @@ The Excel file is public once deployed, so do not put private information in it.
 
 ## Research topics page (research.html)
 
-"Join my research group" (hero button, the "Join us" menu item and the Join section) opens `research.html` in a new tab. It reads `data/research.xlsx`:
+"Join my research group" (hero button, the "Join us" menu item and the Join section) opens `research.html` (a separate page in the same tab). It reads `data/research.xlsx`:
 
 - **One sheet per research direction.** A sheet counts as a topic sheet when its header row contains `English Title`; title rows above the header are fine. Columns: `No.`, `Vietnamese Title`, `English Title`, `Dataset`, `Research Description`, `Research Expectation`. The direction name is taken from the first cell of the sheet (text before the dash). Topic codes are built from the direction and the `No.` column (for example `MI-01`), and `research.html#MI-01` opens that topic directly.
 - **Optional `Status` column.** Add it to mark topics as taken (`Taken`, `Assigned`, `Closed` or `Full`): the Apply button is hidden for them and an "Open topics only" filter appears.

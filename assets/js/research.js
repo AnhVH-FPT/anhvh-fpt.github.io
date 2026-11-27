@@ -63,13 +63,37 @@
   };
   const firstSentence = s => { const m = txt(s).match(/Context:\s*([^\n]*)/i); return m ? m[1] : txt(s).split('\n')[0]; };
 
+  /* ---------- pagination ---------- */
+  // Page buttons: 1 … 4 5 [6] 7 8 … 25
+  const pagerHtml = (page, pages) => {
+    if (pages <= 1) return '';
+    const nums = [...new Set([1, pages, page - 2, page - 1, page, page + 1, page + 2])].filter(n => n >= 1 && n <= pages).sort((a, b) => a - b);
+    const out = [`<button type="button" data-p="${page - 1}" ${page === 1 ? 'disabled' : ''} aria-label="Previous page">&lsaquo;</button>`];
+    nums.forEach((n, i) => {
+      if (i && n - nums[i - 1] > 1) out.push('<span class="gap">…</span>');
+      out.push(`<button type="button" data-p="${n}" class="${n === page ? 'on' : ''}" ${n === page ? 'aria-current="page"' : ''}>${n}</button>`);
+    });
+    out.push(`<button type="button" data-p="${page + 1}" ${page === pages ? 'disabled' : ''} aria-label="Next page">&rsaquo;</button>`);
+    return out.join('');
+  };
+  // Remembered "per page" choice (5/10/15/20/25)
+  const savedPer = id => {
+    const sel = $('#' + id), v = store.get(id);
+    if (v && [...sel.options].some(o => o.text === v)) sel.value = v;
+    return +sel.value || 10;
+  };
+
   /* ---------- topics ---------- */
-  let TOPICS = [], DIRS = [], dir = 'all', hasStatus = false;
+  let TOPICS = [], DIRS = [], dir = 'all', hasStatus = false, page = 1, per = savedPer('per');
   const isClosed = t => /taken|assigned|closed|full|ongoing|in progress|đã/i.test(t.status);
 
-  const mailto = t => {
+  const mailParts = t => {
     const subject = `[Research Topic ${t.code}] ${t.en}`;
     const body = `Dear Mr. Ha Anh Vu,\n\nI would like to apply for the research topic below.\n\nTopic: ${t.code} - ${t.en}\n(${t.vi})\n\nFull name:\nStudent ID:\nMajor and semester:\nTeam members (if any):\nWhy I am interested in this topic:\nRelevant experience (Python, PyTorch, courses, projects):\n\nI have attached my CV and transcript.\n\nBest regards,\n`;
+    return { subject, body };
+  };
+  const mailto = t => {
+    const { subject, body } = mailParts(t);
     return `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
@@ -100,18 +124,26 @@
         <div class="tact">
           ${closed ? '<span class="muted">This topic is already taken.</span>'
             : `<a class="btn pri" href="${mailto(t)}">Apply for this topic</a>`}
+          ${closed ? '' : `<button type="button" class="btn copy-mail" data-code="${t.code}">Copy application text</button>`}
           <button type="button" class="btn copy" data-code="${t.code}">Copy link</button>
+          ${closed ? '' : `<p class="tnote">Email app did not open? Copy the application text and send it to <strong>${EMAIL}</strong> from Outlook or Gmail, or message me on Zalo: <strong>0366765835</strong>.</p>`}
         </div>
       </div>
     </details>`;
   };
 
   const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd');
-  const drawTopics = () => {
+  const filtered = () => {
     const q = norm($('#q').value.trim()), only = $('#only').checked;
-    const list = TOPICS.filter(t => (dir === 'all' || t.dir === dir) && (!only || !isClosed(t)) && (!q || t.hay.includes(q)));
-    $('#list').innerHTML = list.map(card).join('') || '<p class="empty">No topic matches your search.</p>';
-    $('#count').textContent = `${list.length} of ${TOPICS.length} topics`;
+    return TOPICS.filter(t => (dir === 'all' || t.dir === dir) && (!only || !isClosed(t)) && (!q || t.hay.includes(q)));
+  };
+  const drawTopics = () => {
+    const list = filtered(), pages = Math.max(1, Math.ceil(list.length / per));
+    page = Math.min(Math.max(1, page), pages);
+    const from = (page - 1) * per, shown = list.slice(from, from + per);
+    $('#list').innerHTML = shown.map(card).join('') || '<p class="empty">No topic matches your search.</p>';
+    $('#pager').innerHTML = pagerHtml(page, pages);
+    $('#count').textContent = list.length ? `${from + 1}–${from + shown.length} of ${list.length} topics` : `0 of ${TOPICS.length} topics`;
     $$('#dirs button').forEach(b => b.classList.toggle('on', b.dataset.dir === dir));
     const d = DIRS.find(x => x.name === dir);
     $('#dirfocus').innerHTML = d && d.focus ? `<strong>Current trends:</strong> ${esc(d.focus)}` : '';
@@ -152,23 +184,48 @@
   const openFromHash = () => {
     const id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
     let el = document.getElementById(id);
-    if (!el && TOPICS.some(t => t.code === id)) { dir = 'all'; $('#q').value = ''; drawTopics(); el = document.getElementById(id); }
+    if (!el && TOPICS.some(t => t.code === id)) {                              // go to the page that holds this topic
+      if (!filtered().some(t => t.code === id)) { dir = 'all'; $('#q').value = ''; $('#only').checked = false; }
+      page = Math.floor(filtered().findIndex(t => t.code === id) / per) + 1;
+      drawTopics(); el = document.getElementById(id);
+    }
     if (el && el.classList.contains('topic')) { el.open = true; el.scrollIntoView({ block: 'start' }); }
   };
   addEventListener('hashchange', openFromHash);
 
-  $('#dirs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { dir = b.dataset.dir; drawTopics(); } });
-  let qt; $('#q').addEventListener('input', () => { clearTimeout(qt); qt = setTimeout(drawTopics, 120); });
-  $('#only').addEventListener('change', drawTopics);
-  $('#list').addEventListener('click', async e => {
-    const b = e.target.closest('.copy'); if (!b) return;
-    const url = location.href.split('#')[0] + '#' + b.dataset.code;
-    try { await navigator.clipboard.writeText(url); b.textContent = 'Link copied'; } catch { prompt('Copy this link:', url); }
-    setTimeout(() => { b.textContent = 'Copy link'; }, 1800);
+  $('#dirs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { dir = b.dataset.dir; page = 1; drawTopics(); } });
+  let qt; $('#q').addEventListener('input', () => { clearTimeout(qt); qt = setTimeout(() => { page = 1; drawTopics(); }, 120); });
+  $('#only').addEventListener('change', () => { page = 1; drawTopics(); });
+  $('#per').addEventListener('change', () => { per = +$('#per').value; store.set('per', per); page = 1; drawTopics(); });
+  $('#pager').addEventListener('click', e => {
+    const b = e.target.closest('button[data-p]'); if (!b || b.disabled) return;
+    page = +b.dataset.p; drawTopics();
+    $('#dirs').scrollIntoView({ block: 'start' });
   });
 
+  // Copy to clipboard, with a manual fallback for browsers that block it
+  const copy = async (b, text, done) => {
+    const label = b.textContent;
+    try { await navigator.clipboard.writeText(text); b.textContent = done; }
+    catch {
+      const ta = Object.assign(document.createElement('textarea'), { value: text });
+      document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand && document.execCommand('copy');
+      document.body.removeChild(ta);
+      if (ok) b.textContent = done; else prompt('Copy this text:', text);
+    }
+    setTimeout(() => { b.textContent = label; }, 1800);
+  };
+  $('#list').addEventListener('click', e => {
+    const b = e.target.closest('.copy, .copy-mail'); if (!b) return;
+    if (b.classList.contains('copy')) return copy(b, location.href.split('#')[0] + '#' + b.dataset.code, 'Link copied');
+    const { subject, body } = mailParts(TOPICS.find(t => t.code === b.dataset.code));
+    copy(b, `To: ${EMAIL}\nSubject: ${subject}\n\n${body}`, 'Copied');
+  });
+  $$('.copy-val').forEach(b => b.addEventListener('click', () => copy(b, b.dataset.copy, 'Copied')));
+
   /* ---------- venues ---------- */
-  let CONF = [], JOUR = [], tab = 'conf', vf = 'all';
+  let CONF = [], JOUR = [], tab = 'conf', vf = 'all', vpage = 1, vper = savedPer('vper');
   const RANKS = { conf: r => r['core rank'] || 'Not ranked', jour: r => r.rank || '' };
   const drawVenues = () => {
     const data = tab === 'conf' ? CONF : JOUR, rk = RANKS[tab];
@@ -179,7 +236,10 @@
       ...ranks.map(r => `<button type="button" data-r="${esc(r)}">${tab === 'conf' && /^[A-C]/.test(r) ? 'CORE ' : ''}${esc(r)} <em>${data.filter(x => rk(x) === r).length}</em></button>`)].join('');
     $$('#venueFilter button').forEach(b => b.classList.toggle('on', b.dataset.r === vf));
     $$('#venues .seg button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
-    const rows = data.filter(x => vf === 'all' || rk(x) === vf);
+    const all = data.filter(x => vf === 'all' || rk(x) === vf), pages = Math.max(1, Math.ceil(all.length / vper));
+    vpage = Math.min(Math.max(1, vpage), pages);
+    const rows = all.slice((vpage - 1) * vper, vpage * vper);
+    $('#vpager').innerHTML = pagerHtml(vpage, pages);
     const a = (u, l) => u ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(l)}</a>` : esc(l);
     $('#venueBox').innerHTML = tab === 'conf'
       ? `<table><thead><tr><th>Conference</th><th>Rank</th><th>Directions</th><th>Deadline</th><th>Start preparing</th><th>Held in</th><th>Hybrid</th></tr></thead><tbody>${
@@ -199,8 +259,14 @@
     if (!CONF.length) tab = 'jour';
     drawVenues();
   };
-  $('#venues .seg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { tab = b.dataset.tab; vf = 'all'; drawVenues(); } });
-  $('#venueFilter').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { vf = b.dataset.r; drawVenues(); } });
+  $('#venues .seg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { tab = b.dataset.tab; vf = 'all'; vpage = 1; drawVenues(); } });
+  $('#venueFilter').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { vf = b.dataset.r; vpage = 1; drawVenues(); } });
+  $('#vper').addEventListener('change', () => { vper = +$('#vper').value; store.set('vper', vper); vpage = 1; drawVenues(); });
+  $('#vpager').addEventListener('click', e => {
+    const b = e.target.closest('button[data-p]'); if (!b || b.disabled) return;
+    vpage = +b.dataset.p; drawVenues();
+    $('#venues .seg').scrollIntoView({ block: 'start' });
+  });
 
   /* ---------- load ---------- */
   const show = wb => { renderTopics(wb); renderVenues(wb); };
