@@ -284,7 +284,10 @@
   const soon = new Set([0, 1, 2].map(k => (thisMonth - 1 + k) % 12 + 1));       // this month and the next two
 
   let CONF = [], JOUR = [], NOTES = [], tab = 'conf', vf = 'all', vpage = 1, vper = savedPer('vper');
-  const vsel = { dir: 'all', dl: 'any', held: 'any', ttp: 'any', sort: 'rank' };
+  const vsel = { dir: 'all', dl: 'any', held: 'any', ttp: 'any', sort: 'default' };
+  // Sort choices per tab; the first one is the default order
+  const SORTS = { conf: [['default', 'Deadline (January first)'], ['fee', 'Lowest fee']],
+    jour: [['default', 'Rank (Q1 first)'], ['fast', 'Fastest first'], ['fee', 'Lowest fee']] };
   const RANKS = { conf: r => r.rank || 'Not ranked', jour: r => r.rank };
   const venueRows = (data, rk, ignore) => data.filter(x =>
     (ignore === 'rank' || vf === 'all' || rk(x) === vf)
@@ -306,9 +309,11 @@
     $$('#venues .seg button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
     $$('.conf-only').forEach(el => { el.hidden = tab !== 'conf'; });
     $$('.jour-only').forEach(el => { el.hidden = tab !== 'jour'; });
+    $('#vsort').innerHTML = SORTS[tab].map(([v, l]) => `<option value="${v}"${v === vsel.sort ? ' selected' : ''}>${l}</option>`).join('');
 
     const all = venueRows(data, rk);
     if (tab === 'jour' && vsel.sort === 'fast') all.sort(fastFirst);
+    if (vsel.sort === 'fee') all.sort(tab === 'conf' ? confByFee : jourByFee);
     const pages = Math.max(1, Math.ceil(all.length / vper));
     vpage = Math.min(Math.max(1, vpage), pages);
     const rows = all.slice((vpage - 1) * vper, vpage * vper);
@@ -317,24 +322,37 @@
     const a = (u, l) => u ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(l)}</a>` : esc(l);
     const dirTags = x => x.all ? '<span class="dtag">All directions</span>' : x.dirs.map(c => `<span class="dtag" title="${esc((dirByCode(c) || {}).name)}">${esc(c)}</span>`).join(' ');
     $('#venueBox').innerHTML = !rows.length ? '<p class="empty">No venue matches these filters.</p>' : tab === 'conf'
-      ? `<table><thead><tr><th>Conference</th><th>Rank</th><th>Directions</th><th>Deadline</th><th>Start preparing</th><th>Held in</th><th>Hybrid</th></tr></thead><tbody>${
-        rows.map(r => `<tr><td><strong>${a(r.website, r.name)}</strong><small>${esc(r.full)}</small></td><td>${esc(rk(r))}</td><td>${dirTags(r)}</td><td>${esc(r.deadline)}</td><td>${esc(r.prep)}</td><td>${esc(r.heldText)}</td><td>${/yes/i.test(r.hybrid) ? '<span class="badge published">Yes</span>' : esc(r.hybrid)}</td></tr>`).join('')}</tbody></table>`
-      : `<table><thead><tr><th>Journal</th><th>Publisher</th><th>Directions</th><th>Rank</th><th>Time to publish</th></tr></thead><tbody>${
-        rows.map(r => `<tr><td><strong>${a(r.link, r.name)}</strong></td><td>${esc(r.publisher)}</td><td>${dirTags(r)}</td><td><span class="q q${esc(r.rank).slice(1)}">${esc(r.rank)}</span></td><td class="nowrap">${esc(r.ttp) || '–'}</td></tr>`).join('')}</tbody></table>`;
+      ? `<table><thead><tr><th>Conference</th><th>Rank</th><th>Directions</th><th>Deadline</th><th>Start preparing</th><th>Held in</th><th>Hybrid</th><th>Registration fee</th></tr></thead><tbody>${
+        rows.map(r => `<tr><td><strong>${a(r.website, r.name)}</strong><small>${esc(r.full)}</small></td><td>${esc(rk(r))}</td><td>${dirTags(r)}</td><td>${esc(r.deadline)}</td><td>${esc(r.prep)}</td><td>${esc(r.heldText)}</td><td>${/yes/i.test(r.hybrid) ? '<span class="badge published">Yes</span>' : esc(r.hybrid)}</td><td class="nowrap">${feeHtml(r.feeText)}</td></tr>`).join('')}</tbody></table>`
+      : `<table><thead><tr><th>Journal</th><th>Publisher</th><th>Directions</th><th>Rank</th><th>Time to publish</th><th>Publication fee</th></tr></thead><tbody>${
+        rows.map(r => `<tr><td><strong>${a(r.link, r.name)}</strong></td><td>${esc(r.publisher)}</td><td>${dirTags(r)}</td><td><span class="q q${esc(r.rank).slice(1)}">${esc(r.rank)}</span></td><td class="nowrap">${esc(r.ttp) || '–'}</td><td class="nowrap">${feeHtml(r.feeText)}</td></tr>`).join('')}</tbody></table>`;
     const notes = NOTES.filter(n => /^all$/i.test(n.to) || n.to.toLowerCase().startsWith(tab === 'conf' ? 'conf' : 'journ'));
     $('#vnotes').innerHTML = notes.length ? `<details><summary>Notes (${notes.length})</summary><ul>${notes.map(n => `<li>${linkify(n.note)}</li>`).join('')}</ul></details>` : '';
   };
 
   // "4–8 months" -> [4, 8]; "6 months" -> [6, 6]; blank or no number -> unknown (sorted last, kept only by "Any time")
   const ttpOf = s => { const n = (txt(s).match(/\d+(\.\d+)?/g) || []).map(Number); return n.length ? [Math.min(...n), Math.max(...n)] : [999, 999]; };
-  let fastFirst = () => 0;
+  let fastFirst = () => 0, confByFee = () => 0, jourByFee = () => 0;
+  // Fees: "Regular: ≈USD 900" / "Student: ≈USD 600" (one per line) or "Free". Amounts are turned into USD with rough rates, only for sorting.
+  const RATE = { USD: 1, EUR: 1.1, GBP: 1.3, AUD: 0.66, NZD: 0.6, CAD: 0.73, SGD: 0.75, CNY: 0.14, JPY: 0.0067, KRW: 0.00073, INR: 0.012, VND: 0.00004 };
+  const usd = line => {
+    if (/\bfree\b/i.test(line)) return 0;
+    const m = line.replace(/\$/, 'USD ').match(/\b([A-Z]{3})\s*([\d.,]+)/);
+    return m && RATE[m[1]] ? parseFloat(m[2].replace(/,/g, '')) * RATE[m[1]] : Infinity;
+  };
+  const feeOf = s => {
+    const lines = txt(s).split('\n').map(l => l.trim()).filter(Boolean);
+    const reg = lines.find(l => !/student/i.test(l)) || lines[0] || '', stu = lines.find(l => /student/i.test(l)) || '';
+    return { feeText: lines.join('\n'), feeReg: reg ? usd(reg) : Infinity, feeStu: stu ? usd(stu) : Infinity };
+  };
+  const feeHtml = t => !t ? '–' : /^free$/i.test(t) ? '<span class="badge published">Free</span>' : t.split('\n').map(esc).join('<br>');
   const renderVenues = wb => {
     const dirsOf = s => ({ dirs: dirCodes(s), all: /^\s*(all\b.*)?$/i.test(s) });
     CONF = findTable(wb, 'Conferences', h => h.includes('conference') && h.includes('website')).filter(r => r.conference).map((r, i) => {
       const deadline = pick(r, 'submission deadline', 'typical submission deadline'), heldText = pick(r, 'held in', 'typical conference month');
       return { i, name: r.conference, full: r['full name'], rank: r['core rank'], deadline, heldText, hybrid: r.hybrid, website: r.website,
         prep: pick(r, 'start preparing', 'suggested start of preparation'), dl: monthsOf(deadline), held: monthsOf(heldText),
-        ...dirsOf(pick(r, 'directions', 'research directions')) };
+        ...dirsOf(pick(r, 'directions', 'research directions')), ...feeOf(pick(r, 'registration fee', 'fee')) };
     });
     // Sorting is done here, so rows can be typed into the sheets in any order.
     // Conferences: deadline month (January first; "Mid December – January" counts as December),
@@ -347,11 +365,16 @@
     // Journals: Q1, Q2, Q3, Q4 (unranked last), then A to Z
     JOUR = findTable(wb, 'Journals', h => h.some(x => /^journal( name)?$/.test(x)) && h.includes('rank'))
       .map(r => ({ name: pick(r, 'journal', 'journal name'), publisher: r.publisher, rank: r.rank.toUpperCase(), link: r.link, ...dirsOf(r.directions),
-        ttp: pick(r, 'time to publish'), ...(([a, b]) => ({ ttpMin: a, ttpMax: b }))(ttpOf(pick(r, 'time to publish'))) }))
+        ttp: pick(r, 'time to publish'), ...(([a, b]) => ({ ttpMin: a, ttpMax: b }))(ttpOf(pick(r, 'time to publish'))),
+        ...feeOf(pick(r, 'publication fee', 'apc', 'fee')) }))
       .filter(r => r.name && !/^notes?:?$/i.test(r.name) && !r.name.startsWith('•'))
       .sort((a, b) => rankKey(a.rank) - rankKey(b.rank) || byName(a, b));
     // "Fastest first": upper end of the estimate, then lower end, then rank, then name
     fastFirst = (a, b) => a.ttpMax - b.ttpMax || a.ttpMin - b.ttpMin || rankKey(a.rank) - rankKey(b.rank) || byName(a, b);
+    // "Lowest fee": Regular fee, then student fee, then the default order; unknown fees last
+    const cmp = (x, y) => x === y ? 0 : x === Infinity ? 1 : y === Infinity ? -1 : x - y;
+    confByFee = (a, b) => cmp(a.feeReg, b.feeReg) || cmp(a.feeStu, b.feeStu) || dlKey(a) - dlKey(b) || byName(a, b);
+    jourByFee = (a, b) => cmp(a.feeReg, b.feeReg) || rankKey(a.rank) - rankKey(b.rank) || byName(a, b);
     NOTES = findTable(wb, 'Venue Notes', h => h.includes('note') && h.includes('applies to')).filter(r => r.note).map(r => ({ to: r['applies to'] || 'All', note: r.note }));
 
     if (!CONF.length && !JOUR.length) { $('#venues').hidden = true; $('a[href="#venues"]').hidden = true; return; }
@@ -362,12 +385,12 @@
     $('#vheld').innerHTML = opt('any', 'Any month') + MONTHS.map((m, i) => opt(i + 1, m)).join('');
     drawVenues();
   };
-  $('#venues .seg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { tab = b.dataset.tab; vf = 'all'; vpage = 1; drawVenues(); } });
+  $('#venues .seg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { tab = b.dataset.tab; vf = 'all'; vsel.sort = 'default'; vpage = 1; drawVenues(); } });
   $('#venueFilter').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { vf = b.dataset.r; vpage = 1; drawVenues(); } });
   [['#vdir', 'dir'], ['#vdl', 'dl'], ['#vheld', 'held'], ['#vttp', 'ttp'], ['#vsort', 'sort']].forEach(([id, k]) => $(id).addEventListener('change', e => { vsel[k] = e.target.value; vpage = 1; drawVenues(); }));
   $('#vreset').addEventListener('click', () => {
-    vf = 'all'; vsel.dir = 'all'; vsel.dl = vsel.held = vsel.ttp = 'any'; vsel.sort = 'rank'; vpage = 1;
-    $('#vdir').value = 'all'; $('#vdl').value = $('#vheld').value = $('#vttp').value = 'any'; $('#vsort').value = 'rank'; drawVenues();
+    vf = 'all'; vsel.dir = 'all'; vsel.dl = vsel.held = vsel.ttp = 'any'; vsel.sort = 'default'; vpage = 1;
+    $('#vdir').value = 'all'; $('#vdl').value = $('#vheld').value = $('#vttp').value = 'any'; drawVenues();
   });
   $('#vper').addEventListener('change', () => { vper = +$('#vper').value; store.set('vper', vper); vpage = 1; drawVenues(); });
   $('#vpager').addEventListener('click', e => {

@@ -208,6 +208,10 @@ table([
     ('Presentation Format', 'Không', 'Hình thức trình bày (chỉ để tham khảo).', 'Hybrid – online/remote presentation accepted'),
     ('Hybrid', 'Không', 'Yes nếu cho phép trình bày online, No nếu bắt buộc đến trực tiếp.', 'Yes'),
     ('Website', 'Không', 'Link trang chủ hội nghị.', 'https://conferences.miccai.org/'),
+    ('Registration Fee', 'Không', 'Phí đăng ký cho mỗi bài, mỗi mức ghi MỘT dòng (Alt+Enter để xuống dòng trong ô): dòng "Regular: ..." và dòng "Student: ...". '
+     'Hội nghị chỉ có một mức thì ghi một dòng Regular. Luôn ghi mã tiền tệ (USD, EUR, GBP, AUD, JPY, VND...). Dấu ≈ nghĩa là số gần đúng lấy từ kỳ gần đây: '
+     'phí đổi hằng năm, nên kiểm tra lại trên website. Web sắp xếp "Lowest fee" theo dòng Regular (quy đổi gần đúng sang USD), rồi dòng Student.',
+     'Regular: ≈USD 900\nStudent: ≈USD 600'),
 ])
 
 section('8. SHEET "Journals" và "Venue Notes"  →  trang research.html, mục Where to publish')
@@ -221,6 +225,9 @@ table([
      'Ghi "số–số months" (hoặc một số: "6 months"). Web dùng số LỚN để lọc (Up to 9 / 12 / 15 months, Over 15 months) và để sắp xếp khi chọn Sort: Fastest first. '
      'Để trống thì hiện "–" và xếp cuối. Các giá trị hiện có là ƯỚC LƯỢNG: nên đối chiếu với số liệu trên trang tạp chí (ví dụ mục Journal insights của Elsevier) và sửa lại khi cần.',
      '4–8 months'),
+    ('Publication Fee', 'Không', 'Phí đăng bài (APC). Ghi Free nếu tạp chí có cách đăng KHÔNG mất phí (đăng theo kiểu subscription/hybrid, hoặc diamond open access). '
+     'Nếu bắt buộc trả phí thì ghi số tiền kèm mã tiền tệ. Web sắp xếp "Lowest fee" theo cột này (Free lên đầu). Danh sách ưu tiên tạp chí Free.',
+     'Free   hoặc   USD 1,500'),
 ])
 para('Sheet "Venue Notes": mỗi dòng là một ghi chú hiện trong mục "Notes" dưới bảng. Cột Applies To chọn Conferences, Journals hoặc All (hiện ở cả hai bảng); cột Note là nội dung ghi chú.')
 
@@ -231,9 +238,10 @@ table([
     ('Projects', '', 'Học kỳ mới nhất lên trước (năm mới trước; trong một năm: Fall, rồi Summer, rồi Spring). 2 học kỳ mới nhất mở sẵn.', 'Fall 2026 → Summer 2026 → Spring 2026'),
     ('Topics', '', 'Theo thứ tự hướng trong sheet Directions, rồi theo thứ tự dòng trong sheet Topics (cũng chính là số trong mã đề tài).', 'CV-01, CV-02 ... MI-01, MI-02 ...'),
     ('Conferences', '', 'Theo tháng hạn nộp, từ tháng 1 đến tháng 12 (khoảng "Mid December – January" tính là tháng 12). Cùng tháng thì Early trước Mid, Mid trước Late; '
-     'rồi theo CORE Rank (A* → A → B → C → Not ranked); rồi theo tên A→Z. Hội nghị không ghi hạn nộp xếp cuối.', 'Mid January → Late January → February ...'),
+     'rồi theo CORE Rank (A* → A → B → C → Not ranked); rồi theo tên A→Z. Hội nghị không ghi hạn nộp xếp cuối. '
+     'Khi người xem chọn Sort: Lowest fee: theo phí Regular, rồi phí Student (không ghi phí xếp cuối).', 'Mid January → Late January → February ...'),
     ('Journals', '', 'Mặc định theo Rank: Q1 → Q2 → Q3 → Q4 (không có rank xếp cuối), rồi theo tên tạp chí A→Z. '
-     'Khi người xem chọn Sort: Fastest first: theo Time to Publish (số lớn, rồi số nhỏ), rồi Rank, rồi tên.', 'Q1 Applied Soft Computing → Q1 Medical Image Analysis → Q2 ...'),
+     'Khi người xem chọn Sort: Fastest first: theo Time to Publish (số lớn, rồi số nhỏ), rồi Rank, rồi tên. Sort: Lowest fee: Free trước, rồi phí tăng dần, rồi Rank, rồi tên.', 'Q1 Applied Soft Computing → Q1 Medical Image Analysis → Q2 ...'),
     ('Directions, Venue Notes', '', 'Giữ đúng thứ tự dòng trong sheet (bạn tự quyết thứ tự).', ''),
 ])
 

@@ -83,15 +83,15 @@
 <!-- ================= VENUES ================= -->
 <section id="venues" class="alt"><div class="wrap">
   <h2>Where to publish</h2>
-  <p class="intro">Target venues for finished projects: journals that charge no publication fee (APC) and Scopus-indexed annual conferences, sorted by submission deadline.</p>
-  <div class="seg" role="tablist" aria-label="Venue type"><button type="button" data-tab="conf" class="on">Conferences</button><button type="button" data-tab="jour">Free journals</button></div>
+  <p class="intro">Target venues for finished projects: Scopus-indexed annual conferences, sorted by submission deadline, and journals, preferring those you can publish in for free. Fees are approximate: check each website.</p>
+  <div class="seg" role="tablist" aria-label="Venue type"><button type="button" data-tab="conf" class="on">Conferences</button><button type="button" data-tab="jour">Journals</button></div>
   <div id="venueFilter" class="dirs small" role="group" aria-label="Filter by rank"></div>
   <div class="vfilters">
     <label>Direction <select id="vdir"></select></label>
     <label class="conf-only">Deadline <select id="vdl"></select></label>
     <label class="conf-only">Held in <select id="vheld"></select></label>
     <label class="jour-only" hidden>Time to publish <select id="vttp"><option value="any">Any time</option><option value="9">Up to 9 months</option><option value="12">Up to 12 months</option><option value="15">Up to 15 months</option><option value="over">Over 15 months</option></select></label>
-    <label class="jour-only" hidden>Sort <select id="vsort"><option value="rank">Rank (Q1 first)</option><option value="fast">Fastest first</option></select></label>
+    <label>Sort <select id="vsort"></select></label>
     <button type="button" class="mini" id="vreset">Reset filters</button>
     <span class="vright"><span class="count" id="vcount" aria-live="polite"></span>
     <label class="per">Show <select id="vper" aria-label="Venues per page"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>25</option></select> per page</label></span>
@@ -118,6 +118,6 @@
 <footer><div class="wrap">&copy; 2026 Ha Anh Vu. <a href="index.html">Back to the main page</a></div></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="assets/js/research.js?v=14"></script>
+<script src="assets/js/research.js?v=15"></script>
 </body>
 </html>
