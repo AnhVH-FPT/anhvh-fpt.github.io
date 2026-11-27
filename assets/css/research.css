@@ -33,7 +33,7 @@
 /* Topic cards */
 .topic{border-top:1px solid var(--line)}
 .topic:last-child{border-bottom:1px solid var(--line)}
-.topic summary{display:grid;grid-template-columns:70px 1fr 14px;gap:14px;padding:18px 0;cursor:pointer;list-style:none;align-items:start}
+.topic summary{display:grid;grid-template-columns:70px minmax(0,1fr) 14px;gap:14px;padding:18px 0;cursor:pointer;list-style:none;align-items:start}
 .topic summary::-webkit-details-marker{display:none}
 .topic summary::after{content:"";width:9px;height:9px;margin-top:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s}
 .topic[open] summary::after{transform:rotate(-135deg)}
@@ -42,7 +42,7 @@
 /* Closed cards all have the same height: each part gets a fixed number of lines (full text when the card is opened) */
 .clamp{display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
 /* Every closed card is the same height: text is clamped and spare space sits above the tags, so tags line up */
-.thead{display:flex;flex-direction:column;min-height:11.2rem}
+.thead{display:flex;flex-direction:column;min-width:0;min-height:11.2rem}
 .thead h3{font-size:1.15rem;line-height:1.35;margin-bottom:2px;-webkit-line-clamp:2}
 .vi{color:var(--muted);font-size:.93rem;line-height:1.5;margin-bottom:4px;-webkit-line-clamp:1}
 .vi:empty{display:none}
@@ -88,7 +88,7 @@
 @media (max-width:820px){
   .steps{grid-template-columns:1fr;gap:12px}
   .cols-panel{padding:30px 22px}
-  .topic summary{grid-template-columns:58px 1fr 12px;gap:10px}
+  .topic summary{grid-template-columns:58px minmax(0,1fr) 12px;gap:10px}
   .teaser{-webkit-line-clamp:4}
   .thead h3{-webkit-line-clamp:3}
   .thead{min-height:14.2rem}

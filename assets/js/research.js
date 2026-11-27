@@ -225,7 +225,7 @@
     openFromHash();
   };
 
-  const openFromHash = () => {
+  const openFromHash = ev => {
     const id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
     let el = document.getElementById(id);
     if (!el && TOPICS.some(t => t.code === id)) {                              // go to the page that holds this topic
@@ -234,6 +234,7 @@
       drawTopics(); el = document.getElementById(id);
     }
     if (el && el.classList.contains('topic')) { el.open = true; el.scrollIntoView({ block: 'start' }); }
+    else if (el && el.tagName === 'SECTION' && !ev) requestAnimationFrame(() => el.scrollIntoView({ block: 'start' }));   // #venues etc.: the page grew after the browser jumped
   };
   addEventListener('hashchange', openFromHash);
 

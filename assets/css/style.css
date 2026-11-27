@@ -172,3 +172,11 @@ footer{padding:34px 0;border-top:1px solid var(--line);color:var(--muted);font-s
 .panel.cta{display:flex;flex-wrap:wrap;gap:20px 40px;align-items:center;justify-content:space-between}
 .panel.cta .lead{margin:0}
 .panel.cta h2{margin-bottom:14px}
+/* Phones: menu gets its own full-width row under the name, so more than one link is visible */
+@media (max-width:620px){
+  .nav-in{flex-wrap:wrap;height:auto;gap:4px 10px;padding-top:8px;padding-bottom:6px}
+  .nav nav{order:3;flex-basis:100%;margin:0 -6px}
+  .nav nav a{padding:6px 10px;font-size:.9rem}
+  .brand{flex:1}
+  html{scroll-padding-top:calc(104px + env(safe-area-inset-top,0px))}
+}
