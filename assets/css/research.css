@@ -66,6 +66,7 @@
 .tablewrap td strong{color:var(--ink)}
 .tablewrap td small{display:block;color:var(--muted);font-size:.8rem}
 .tablewrap tr:last-child td{border-bottom:0}
+.tablewrap td.nowrap{white-space:nowrap}
 .tablewrap .empty{padding:16px;border:0}
 .q{font-weight:600;font-size:.78rem;padding:2px 8px;border-radius:6px}
 .q1{color:var(--s-pub);background:color-mix(in srgb,var(--s-pub) 13%,transparent)}

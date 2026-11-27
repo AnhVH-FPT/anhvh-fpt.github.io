@@ -284,13 +284,15 @@
   const soon = new Set([0, 1, 2].map(k => (thisMonth - 1 + k) % 12 + 1));       // this month and the next two
 
   let CONF = [], JOUR = [], NOTES = [], tab = 'conf', vf = 'all', vpage = 1, vper = savedPer('vper');
-  const vsel = { dir: 'all', dl: 'any', held: 'any' };
+  const vsel = { dir: 'all', dl: 'any', held: 'any', ttp: 'any', sort: 'rank' };
   const RANKS = { conf: r => r.rank || 'Not ranked', jour: r => r.rank };
   const venueRows = (data, rk, ignore) => data.filter(x =>
     (ignore === 'rank' || vf === 'all' || rk(x) === vf)
     && (vsel.dir === 'all' || x.dirs.includes(vsel.dir))
     && (tab !== 'conf' || vsel.dl === 'any' || (vsel.dl === 'soon' ? x.dl.some(m => soon.has(m)) : x.dl.includes(+vsel.dl)))
-    && (tab !== 'conf' || vsel.held === 'any' || x.held.includes(+vsel.held)));
+    && (tab !== 'conf' || vsel.held === 'any' || x.held.includes(+vsel.held))
+    // Time to publish: "up to N months" uses the upper end of the estimate; "over" keeps the slower ones
+    && (tab !== 'jour' || vsel.ttp === 'any' || (vsel.ttp === 'over' ? x.ttpMax > 15 : x.ttpMax <= +vsel.ttp)));
 
   const drawVenues = () => {
     const data = tab === 'conf' ? CONF : JOUR, rk = RANKS[tab];
@@ -303,8 +305,11 @@
     $$('#venueFilter button').forEach(b => b.classList.toggle('on', b.dataset.r === vf));
     $$('#venues .seg button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
     $$('.conf-only').forEach(el => { el.hidden = tab !== 'conf'; });
+    $$('.jour-only').forEach(el => { el.hidden = tab !== 'jour'; });
 
-    const all = venueRows(data, rk), pages = Math.max(1, Math.ceil(all.length / vper));
+    const all = venueRows(data, rk);
+    if (tab === 'jour' && vsel.sort === 'fast') all.sort(fastFirst);
+    const pages = Math.max(1, Math.ceil(all.length / vper));
     vpage = Math.min(Math.max(1, vpage), pages);
     const rows = all.slice((vpage - 1) * vper, vpage * vper);
     $('#vpager').innerHTML = pagerHtml(vpage, pages);
@@ -314,12 +319,15 @@
     $('#venueBox').innerHTML = !rows.length ? '<p class="empty">No venue matches these filters.</p>' : tab === 'conf'
       ? `<table><thead><tr><th>Conference</th><th>Rank</th><th>Directions</th><th>Deadline</th><th>Start preparing</th><th>Held in</th><th>Hybrid</th></tr></thead><tbody>${
         rows.map(r => `<tr><td><strong>${a(r.website, r.name)}</strong><small>${esc(r.full)}</small></td><td>${esc(rk(r))}</td><td>${dirTags(r)}</td><td>${esc(r.deadline)}</td><td>${esc(r.prep)}</td><td>${esc(r.heldText)}</td><td>${/yes/i.test(r.hybrid) ? '<span class="badge published">Yes</span>' : esc(r.hybrid)}</td></tr>`).join('')}</tbody></table>`
-      : `<table><thead><tr><th>Journal</th><th>Publisher</th><th>Directions</th><th>Rank</th></tr></thead><tbody>${
-        rows.map(r => `<tr><td><strong>${a(r.link, r.name)}</strong></td><td>${esc(r.publisher)}</td><td>${dirTags(r)}</td><td><span class="q q${esc(r.rank).slice(1)}">${esc(r.rank)}</span></td></tr>`).join('')}</tbody></table>`;
+      : `<table><thead><tr><th>Journal</th><th>Publisher</th><th>Directions</th><th>Rank</th><th>Time to publish</th></tr></thead><tbody>${
+        rows.map(r => `<tr><td><strong>${a(r.link, r.name)}</strong></td><td>${esc(r.publisher)}</td><td>${dirTags(r)}</td><td><span class="q q${esc(r.rank).slice(1)}">${esc(r.rank)}</span></td><td class="nowrap">${esc(r.ttp) || '–'}</td></tr>`).join('')}</tbody></table>`;
     const notes = NOTES.filter(n => /^all$/i.test(n.to) || n.to.toLowerCase().startsWith(tab === 'conf' ? 'conf' : 'journ'));
     $('#vnotes').innerHTML = notes.length ? `<details><summary>Notes (${notes.length})</summary><ul>${notes.map(n => `<li>${linkify(n.note)}</li>`).join('')}</ul></details>` : '';
   };
 
+  // "4–8 months" -> [4, 8]; "6 months" -> [6, 6]; blank or no number -> unknown (sorted last, kept only by "Any time")
+  const ttpOf = s => { const n = (txt(s).match(/\d+(\.\d+)?/g) || []).map(Number); return n.length ? [Math.min(...n), Math.max(...n)] : [999, 999]; };
+  let fastFirst = () => 0;
   const renderVenues = wb => {
     const dirsOf = s => ({ dirs: dirCodes(s), all: /^\s*(all\b.*)?$/i.test(s) });
     CONF = findTable(wb, 'Conferences', h => h.includes('conference') && h.includes('website')).filter(r => r.conference).map((r, i) => {
@@ -338,9 +346,12 @@
     CONF.sort((a, b) => dlKey(a) - dlKey(b) || rankKey(a.rank) - rankKey(b.rank) || byName(a, b));
     // Journals: Q1, Q2, Q3, Q4 (unranked last), then A to Z
     JOUR = findTable(wb, 'Journals', h => h.some(x => /^journal( name)?$/.test(x)) && h.includes('rank'))
-      .map(r => ({ name: pick(r, 'journal', 'journal name'), publisher: r.publisher, rank: r.rank.toUpperCase(), link: r.link, ...dirsOf(r.directions) }))
+      .map(r => ({ name: pick(r, 'journal', 'journal name'), publisher: r.publisher, rank: r.rank.toUpperCase(), link: r.link, ...dirsOf(r.directions),
+        ttp: pick(r, 'time to publish'), ...(([a, b]) => ({ ttpMin: a, ttpMax: b }))(ttpOf(pick(r, 'time to publish'))) }))
       .filter(r => r.name && !/^notes?:?$/i.test(r.name) && !r.name.startsWith('•'))
       .sort((a, b) => rankKey(a.rank) - rankKey(b.rank) || byName(a, b));
+    // "Fastest first": upper end of the estimate, then lower end, then rank, then name
+    fastFirst = (a, b) => a.ttpMax - b.ttpMax || a.ttpMin - b.ttpMin || rankKey(a.rank) - rankKey(b.rank) || byName(a, b);
     NOTES = findTable(wb, 'Venue Notes', h => h.includes('note') && h.includes('applies to')).filter(r => r.note).map(r => ({ to: r['applies to'] || 'All', note: r.note }));
 
     if (!CONF.length && !JOUR.length) { $('#venues').hidden = true; $('a[href="#venues"]').hidden = true; return; }
@@ -353,10 +364,10 @@
   };
   $('#venues .seg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { tab = b.dataset.tab; vf = 'all'; vpage = 1; drawVenues(); } });
   $('#venueFilter').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { vf = b.dataset.r; vpage = 1; drawVenues(); } });
-  [['#vdir', 'dir'], ['#vdl', 'dl'], ['#vheld', 'held']].forEach(([id, k]) => $(id).addEventListener('change', e => { vsel[k] = e.target.value; vpage = 1; drawVenues(); }));
+  [['#vdir', 'dir'], ['#vdl', 'dl'], ['#vheld', 'held'], ['#vttp', 'ttp'], ['#vsort', 'sort']].forEach(([id, k]) => $(id).addEventListener('change', e => { vsel[k] = e.target.value; vpage = 1; drawVenues(); }));
   $('#vreset').addEventListener('click', () => {
-    vf = 'all'; vsel.dir = 'all'; vsel.dl = vsel.held = 'any'; vpage = 1;
-    $('#vdir').value = 'all'; $('#vdl').value = $('#vheld').value = 'any'; drawVenues();
+    vf = 'all'; vsel.dir = 'all'; vsel.dl = vsel.held = vsel.ttp = 'any'; vsel.sort = 'rank'; vpage = 1;
+    $('#vdir').value = 'all'; $('#vdl').value = $('#vheld').value = $('#vttp').value = 'any'; $('#vsort').value = 'rank'; drawVenues();
   });
   $('#vper').addEventListener('change', () => { vper = +$('#vper').value; store.set('vper', vper); vpage = 1; drawVenues(); });
   $('#vpager').addEventListener('click', e => {

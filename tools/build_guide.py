@@ -217,6 +217,10 @@ table([
     ('Rank', 'Không', 'Chọn Q1, Q2, Q3 hoặc Q4 (theo SCImago). Để trống thì xếp cuối danh sách.', 'Q1'),
     ('Directions', 'Không', 'Mã hướng cách nhau bằng dấu phẩy, hoặc All cho tạp chí AI/ML tổng quát. Lưu ý: cột này ban đầu được điền TỰ ĐỘNG theo tên tạp chí, nên rà lại.', 'MI   hoặc   CV, MI   hoặc   All'),
     ('Link', 'Không', 'Link trang tạp chí.', 'https://www.sciencedirect.com/journal/medical-image-analysis'),
+    ('Time to Publish', 'Không', 'Thời gian ước lượng từ lúc nộp bài đến khi bài được đăng online, tính bằng tháng, đã gồm các vòng sửa bài. '
+     'Ghi "số–số months" (hoặc một số: "6 months"). Web dùng số LỚN để lọc (Up to 9 / 12 / 15 months, Over 15 months) và để sắp xếp khi chọn Sort: Fastest first. '
+     'Để trống thì hiện "–" và xếp cuối. Các giá trị hiện có là ƯỚC LƯỢNG: nên đối chiếu với số liệu trên trang tạp chí (ví dụ mục Journal insights của Elsevier) và sửa lại khi cần.',
+     '4–8 months'),
 ])
 para('Sheet "Venue Notes": mỗi dòng là một ghi chú hiện trong mục "Notes" dưới bảng. Cột Applies To chọn Conferences, Journals hoặc All (hiện ở cả hai bảng); cột Note là nội dung ghi chú.')
 
@@ -228,7 +232,8 @@ table([
     ('Topics', '', 'Theo thứ tự hướng trong sheet Directions, rồi theo thứ tự dòng trong sheet Topics (cũng chính là số trong mã đề tài).', 'CV-01, CV-02 ... MI-01, MI-02 ...'),
     ('Conferences', '', 'Theo tháng hạn nộp, từ tháng 1 đến tháng 12 (khoảng "Mid December – January" tính là tháng 12). Cùng tháng thì Early trước Mid, Mid trước Late; '
      'rồi theo CORE Rank (A* → A → B → C → Not ranked); rồi theo tên A→Z. Hội nghị không ghi hạn nộp xếp cuối.', 'Mid January → Late January → February ...'),
-    ('Journals', '', 'Theo Rank: Q1 → Q2 → Q3 → Q4 (không có rank xếp cuối), rồi theo tên tạp chí A→Z.', 'Q1 Applied Soft Computing → Q1 Medical Image Analysis → Q2 ...'),
+    ('Journals', '', 'Mặc định theo Rank: Q1 → Q2 → Q3 → Q4 (không có rank xếp cuối), rồi theo tên tạp chí A→Z. '
+     'Khi người xem chọn Sort: Fastest first: theo Time to Publish (số lớn, rồi số nhỏ), rồi Rank, rồi tên.', 'Q1 Applied Soft Computing → Q1 Medical Image Analysis → Q2 ...'),
     ('Directions, Venue Notes', '', 'Giữ đúng thứ tự dòng trong sheet (bạn tự quyết thứ tự).', ''),
 ])
 

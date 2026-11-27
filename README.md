@@ -72,7 +72,7 @@ The Excel file is public once deployed, so do not put private information in it.
 | Directions | research.html | a research direction: `Code` (CV, MI, XAI, EDGE, VLM), `Direction`, `Focus` |
 | Topics | research.html | a topic (its code, e.g. `MI-07`, is numbered by the site from the direction and the row order: add new topics at the end, mark taken ones `Taken` instead of deleting): `Direction` (a code), `Status` (`Open` or `Taken`), titles, dataset, `Research Description` and `Research Expectation` written in a fixed template ("Context: ...", "Gap: ...", "Expected results:" then "(1) ..." lines; see section 6a of the Hướng dẫn sheet). Only template fields are shown, in a fixed order; lines outside the template are listed in the browser console |
 | Conferences | research.html | a conference: `Directions` (codes or `All`), `CORE Rank`, `Submission Deadline`, `Held In` (English month names), `Hybrid`, `Website` |
-| Journals | research.html | a no-APC journal: `Rank` (Q1 to Q4), `Directions` (codes or `All`), `Link` |
+| Journals | research.html | a no-APC journal: `Rank` (Q1 to Q4), `Directions` (codes or `All`), `Link`, `Time to Publish` (e.g. `4–8 months`; estimates, check them on each journal's page) |
 | Venue Notes | research.html | a note shown under the Conferences or Journals table |
 
 Rules: keep sheet names and the header row (row 1) as they are; column order does not matter. Conferences are sorted by deadline on the site, so their row order does not matter either. The Journals `Directions` column was first filled automatically from journal names, so review it.

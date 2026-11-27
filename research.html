@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/style.css?v=6">
-<link rel="stylesheet" href="assets/css/research.css?v=8">
+<link rel="stylesheet" href="assets/css/research.css?v=9">
 </head>
 <body>
 
@@ -90,6 +90,8 @@
     <label>Direction <select id="vdir"></select></label>
     <label class="conf-only">Deadline <select id="vdl"></select></label>
     <label class="conf-only">Held in <select id="vheld"></select></label>
+    <label class="jour-only" hidden>Time to publish <select id="vttp"><option value="any">Any time</option><option value="9">Up to 9 months</option><option value="12">Up to 12 months</option><option value="15">Up to 15 months</option><option value="over">Over 15 months</option></select></label>
+    <label class="jour-only" hidden>Sort <select id="vsort"><option value="rank">Rank (Q1 first)</option><option value="fast">Fastest first</option></select></label>
     <button type="button" class="mini" id="vreset">Reset filters</button>
     <span class="vright"><span class="count" id="vcount" aria-live="polite"></span>
     <label class="per">Show <select id="vper" aria-label="Venues per page"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>25</option></select> per page</label></span>
@@ -116,6 +118,6 @@
 <footer><div class="wrap">&copy; 2026 Ha Anh Vu. <a href="index.html">Back to the main page</a></div></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="assets/js/research.js?v=13"></script>
+<script src="assets/js/research.js?v=14"></script>
 </body>
 </html>
