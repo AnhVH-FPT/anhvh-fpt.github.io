@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/style.css?v=2">
 </head>
 <body>
 
@@ -67,18 +67,15 @@
   </aside>
 </div></section>
 
-<!-- ================= RESEARCH ================= -->
+<!-- ================= RESEARCH (filled from the Directions sheet of data/database.xlsx; the cards below are the fallback) ================= -->
 <section id="research"><div class="wrap">
   <h2>Research interests</h2>
-  <div class="rgrid">
-    <div class="ritem"><h3>Medical imaging</h3>
-      <p>Deep learning architectures for computer-aided diagnosis, medical image processing and disease detection that support clinical decision-making.</p></div>
-    <div class="ritem"><h3>Explainable and trustworthy AI</h3>
-      <p>Interpreting black-box models through feature visualization and uncertainty quantification to advance AI safety, transparency and accountability.</p></div>
-    <div class="ritem"><h3>Computer vision and image processing</h3>
-      <p>High-performance object detection, feature extraction and visual pattern recognition for dynamic, real-world environments.</p></div>
-    <div class="ritem"><h3>Intelligent IoT and edge computing</h3>
-      <p>Deep learning for resource-constrained embedded systems, enabling real-time sensing and autonomous decision-making.</p></div>
+  <div class="dgrid" id="dirgrid">
+    <a class="ditem" href="research.html?dir=CV#topics"><span class="dcode">CV</span><h3>Computer Vision &amp; Image Processing</h3><p>Detection, segmentation and restoration for real-world images and video.</p></a>
+    <a class="ditem" href="research.html?dir=MI#topics"><span class="dcode">MI</span><h3>Medical Imaging</h3><p>Deep learning for diagnosis and segmentation of medical scans.</p></a>
+    <a class="ditem" href="research.html?dir=XAI#topics"><span class="dcode">XAI</span><h3>Explainable &amp; Trustworthy AI</h3><p>Interpretable, uncertainty-aware and fair AI models.</p></a>
+    <a class="ditem" href="research.html?dir=EDGE#topics"><span class="dcode">EDGE</span><h3>Intelligent IoT &amp; Edge Computing</h3><p>Efficient deep learning on microcontrollers and IoT devices.</p></a>
+    <a class="ditem" href="research.html?dir=VLM#topics"><span class="dcode">VLM</span><h3>Vision Language Model</h3><p>Small vision-language models for VQA, captioning and reasoning.</p></a>
   </div>
 </div></section>
 
@@ -163,6 +160,6 @@
 <footer><div class="wrap">&copy; 2026 Ha Anh Vu. <span>Built with plain HTML, CSS and JavaScript.</span></div></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="assets/js/main.js"></script>
+<script src="assets/js/main.js?v=2"></script>
 </body>
 </html>

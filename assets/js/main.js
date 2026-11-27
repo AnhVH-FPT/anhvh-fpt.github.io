@@ -193,6 +193,19 @@
     setTimeout(() => card.classList.remove('flash'), 2600);
   });
 
+  /* ----- Research interests: one card per row of the Directions sheet, linking to its topics on research.html ----- */
+  const renderDirections = (dirRows, topicRows) => {
+    const dirs = dirRows.map(row).filter(r => r.code && r.direction);
+    if (!dirs.length) return;                                                  // keep the cards written in index.html
+    const topics = topicRows.map(row).filter(r => r['english title']);
+    const open = c => topics.filter(t => t.direction.toLowerCase() === c.toLowerCase() && !/taken|assigned|closed|full/i.test(t.status)).length;
+    $('#dirgrid').innerHTML = dirs.map(d => {
+      const n = open(d.code);
+      return `<a class="ditem" href="research.html?dir=${encodeURIComponent(d.code)}#topics"><span class="dcode">${esc(d.code)}</span>
+        <h3>${esc(d.direction)}</h3>${d.summary ? `<p>${esc(d.summary)}</p>` : ''}${n ? `<span class="dcount">${n} open topics &rarr;</span>` : ''}</a>`;
+    }).join('');
+  };
+
   const showWb = wb => {
     const rows = name => {
       const n = wb.SheetNames.find(s => s.trim().toLowerCase() === name.toLowerCase());
@@ -213,6 +226,7 @@
     };
     renderPubs(rows('Publications'));
     renderProjects(rows('Projects'));
+    renderDirections(rows('Directions'), rows('Topics'));
   };
   const readB64 = b64 => showWb(XLSX.read(b64, { type: 'base64', cellNF: true }));   // used only by the preview build
 

@@ -59,9 +59,14 @@ h1{font-size:clamp(2.8rem,7vw,4.4rem);line-height:1.02;font-weight:700;letter-sp
 .about p{max-width:64ch}
 .edu{border-left:2px solid var(--brand);padding-left:22px}
 .edu p{margin-bottom:16px}
-.rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:34px 48px}
-.ritem{border-top:2px solid var(--brand);padding-top:14px}
-.ritem p{color:var(--muted)}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(176px,1fr));gap:12px}
+.ditem{display:block;border:1px solid var(--line);border-top:3px solid var(--brand);border-radius:12px;background:var(--surface);padding:14px 16px;text-decoration:none;color:var(--ink);transition:border-color .15s,transform .15s}
+.ditem:hover{border-color:var(--brand);transform:translateY(-2px)}
+.ditem h3{font-size:1.02rem;line-height:1.3;margin:6px 0 4px}
+.ditem p{color:var(--muted);font-size:.86rem;line-height:1.5;margin:0}
+.dcode{font:600 .72rem 'IBM Plex Sans',sans-serif;color:var(--brand);background:var(--soft);border-radius:6px;padding:2px 8px}
+.dcount{display:block;margin-top:8px;font-size:.8rem;font-weight:600;color:var(--brand)}
+#research{padding-bottom:56px}
 
 /* Supervision */
 .intro{color:var(--muted);max-width:64ch;margin-bottom:30px}

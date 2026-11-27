@@ -100,6 +100,7 @@
 
   /* ---------- topics (sheet "Topics") ---------- */
   let TOPICS = [], dir = 'all', page = 1, per = savedPer('per');
+  const wantDir = new URLSearchParams(location.search).get('dir');            // research.html?dir=MI preselects a direction
   const isClosed = t => /taken|assigned|closed|full/i.test(t.status);
 
   const mailParts = t => {
@@ -181,6 +182,7 @@
         desc: r['research description'], expect: r['research expectation'] });
     });
     DIRS = DIRS.filter(d => d.count);
+    if (wantDir && dirByCode(wantDir)) dir = dirByCode(wantDir).code;
     // Order: directions as in the Directions sheet, then by topic code number (MI-2 before MI-10), whatever the row order
     const rank = new Map(DIRS.map((d, i) => [d.code, i]));
     TOPICS.sort((a, b) => rank.get(a.dir) - rank.get(b.dir) || a.code.localeCompare(b.code, undefined, { numeric: true }) || a.i - b.i);
