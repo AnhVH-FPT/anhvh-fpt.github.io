@@ -52,7 +52,7 @@ Editing the workbook from code: use openpyxl, keep data validations (Direction, 
 ## Behaviour the owner asked for (keep it)
 
 - **Sorting is done by the site**, whatever the row order: Journals Q1→Q4 then name; Conferences by deadline month (early/mid/late), then CORE rank, then name; Topics by Directions order then row order; Publications/Projects as in main.js.
-- **research.html**: direction chips + search + "Open topics only" (only when some topic is Taken); 5/10/15/20/25 per page with numbered pages (remembered in localStorage); `research.html#MI-07` opens a topic on the right page; `research.html?dir=MI` preselects a direction. Venues: rank chips plus Direction, Deadline (month or "Next 3 months") and Held in filters, Reset button, paging, notes under the table.
+- **research.html**: direction chips (counts and lists show Open topics only) + a "Taken" chip, shown when some topic is Taken, that is the only place taken topics appear (codes unchanged) + search; 5/10/15/20/25 per page with numbered pages (remembered in localStorage); `research.html#MI-07` opens a topic on the right page; `research.html?dir=MI` preselects a direction. Venues: rank chips plus Direction, Deadline (month or "Next 3 months") and Held in filters, Reset button, paging, notes under the table.
 - Topic intro text: individual or team of up to 4, at least 3 months, students prepare their own training hardware.
 - Apply button opens a prefilled email; "Copy application text" and a note with email + Zalo cover students whose email app does not open.
 - **Header**: on index.html "Join us →" is the last item, styled as the blue `.nav-cta` button; on research.html "← Home" uses the same `.nav-cta` style. Join links open research.html in the **same tab**.

@@ -139,7 +139,7 @@ para('Thêm một hướng mới: thêm một dòng ở sheet này (ví dụ Cod
 section('6. SHEET "Topics": danh sách đề tài cho sinh viên  →  trang research.html, mục Research topics')
 table([
     ('Direction', 'Có', 'Chọn mã hướng trong danh sách thả xuống (lấy từ sheet Directions).', 'MI'),
-    ('Status', 'Có', 'Open = còn trống, sinh viên bấm Apply được. Taken = đã có người nhận: đề tài hiện mờ, ẩn nút Apply, và web hiện thêm ô lọc "Open topics only". Dòng Taken cũng tự hiện chữ xám trong Excel.', 'Open'),
+    ('Status', 'Có', 'Open = còn trống, sinh viên bấm Apply được. Taken = đã có người nhận: đề tài bị ẩn khỏi "All directions" và khỏi hướng của nó, chỉ hiện trong mục "Taken" riêng (hiện mờ, không có nút Apply). Mã đề tài giữ nguyên, vì đề tài vẫn nằm nguyên dòng trong sheet. Dòng Taken cũng tự hiện chữ xám trong Excel.', 'Open'),
     ('Vietnamese Title', 'Không', 'Tên đề tài tiếng Việt (hiện dưới tên tiếng Anh).', 'Phân vùng đa cơ quan ổ bụng trên ảnh CT ...'),
     ('English Title', 'Có', 'Tên đề tài tiếng Anh (tiêu đề chính). Dòng không có cột này sẽ bị bỏ qua.', 'Parameter-Efficient Adaptation of Medical SAM ...'),
     ('Dataset', 'Không', 'Mỗi bộ dữ liệu gồm 2 dòng trong cùng ô (Alt + Enter để xuống dòng): dòng 1 là "• Tên", dòng 2 là link. 3 bộ đầu tiên hiện thành nhãn nhỏ trên thẻ đề tài.',

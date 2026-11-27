@@ -166,8 +166,9 @@
 
   const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd');
   const filtered = () => {
-    const q = norm($('#q').value.trim()), only = $('#only').checked;
-    return TOPICS.filter(t => (dir === 'all' || t.dir === dir) && (!only || !isClosed(t)) && (!q || t.hay.includes(q)));
+    // Taken topics appear only under the "Taken" chip; every other view lists open topics only
+    const q = norm($('#q').value.trim());
+    return TOPICS.filter(t => (dir === 'taken' ? isClosed(t) : !isClosed(t) && (dir === 'all' || t.dir === dir)) && (!q || t.hay.includes(q)));
   };
   const drawTopics = () => {
     const list = filtered(), pages = Math.max(1, Math.ceil(list.length / per));
@@ -178,7 +179,8 @@
     $('#count').textContent = list.length ? `${from + 1}–${from + shown.length} of ${list.length} topics` : `0 of ${TOPICS.length} topics`;
     $$('#dirs button').forEach(b => b.classList.toggle('on', b.dataset.dir === dir));
     const d = dirByCode(dir);
-    $('#dirfocus').innerHTML = d && d.focus ? `<strong>Current trends:</strong> ${esc(d.focus)}` : '';
+    $('#dirfocus').innerHTML = dir === 'taken' ? 'These topics are already taken by students and are no longer open for applications. They are listed for reference with their original codes.'
+      : d && d.focus ? `<strong>Current trends:</strong> ${esc(d.focus)}` : '';
   };
 
   const renderTopics = wb => {
@@ -201,6 +203,7 @@
     });
     DIRS = DIRS.filter(d => d.count);
     if (wantDir && dirByCode(wantDir)) dir = dirByCode(wantDir).code;
+    if (wantDir && wantDir.toLowerCase() === 'taken') dir = 'taken';
     // Order: directions as in the Directions sheet, then row order in the Topics sheet (= code number)
     const rank = new Map(DIRS.map((d, i) => [d.code, i]));
     TOPICS.sort((a, b) => rank.get(a.dir) - rank.get(b.dir) || a.i - b.i);
@@ -211,9 +214,12 @@
       if (d.skipped.length || e.skipped.length) console.warn(`Topic ${x.code}: text outside the template is not shown:`, [...d.skipped, ...e.skipped]);
       x.hay = norm([x.code, x.en, x.vi, x.dataset, x.desc, x.expect].join(' '));
     });
-    $('#onlyWrap').hidden = !TOPICS.some(isClosed);
-    $('#dirs').innerHTML = `<button type="button" data-dir="all">All directions <em>${TOPICS.length}</em></button>` +
-      DIRS.map(d => `<button type="button" data-dir="${esc(d.code)}">${esc(d.name)} <em>${d.count}</em></button>`).join('');
+    // Chip counts are open topics; taken ones get their own chip (shown only when there are some)
+    const open = TOPICS.filter(t => !isClosed(t)), taken = TOPICS.length - open.length;
+    $('#dirs').innerHTML = `<button type="button" data-dir="all">All directions <em>${open.length}</em></button>` +
+      DIRS.map(d => `<button type="button" data-dir="${esc(d.code)}">${esc(d.name)} <em>${open.filter(t => t.dir === d.code).length}</em></button>`).join('') +
+      (taken ? `<button type="button" data-dir="taken" class="taken-chip">Taken <em>${taken}</em></button>` : '');
+    if (dir === 'taken' && !taken) dir = 'all';
     drawTopics();
     openFromHash();
   };
@@ -222,7 +228,7 @@
     const id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
     let el = document.getElementById(id);
     if (!el && TOPICS.some(t => t.code === id)) {                              // go to the page that holds this topic
-      if (!filtered().some(t => t.code === id)) { dir = 'all'; $('#q').value = ''; $('#only').checked = false; }
+      if (!filtered().some(t => t.code === id)) { dir = isClosed(TOPICS.find(t => t.code === id)) ? 'taken' : 'all'; $('#q').value = ''; }
       page = Math.floor(filtered().findIndex(t => t.code === id) / per) + 1;
       drawTopics(); el = document.getElementById(id);
     }
@@ -232,7 +238,6 @@
 
   $('#dirs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { dir = b.dataset.dir; page = 1; drawTopics(); } });
   let qt; $('#q').addEventListener('input', () => { clearTimeout(qt); qt = setTimeout(() => { page = 1; drawTopics(); }, 120); });
-  $('#only').addEventListener('change', () => { page = 1; drawTopics(); });
   $('#per').addEventListener('change', () => { per = +$('#per').value; store.set('per', per); page = 1; drawTopics(); });
   $('#pager').addEventListener('click', e => {
     const b = e.target.closest('button[data-p]'); if (!b || b.disabled) return;
