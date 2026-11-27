@@ -229,7 +229,6 @@
     renderProjects(rows('Projects'));
     renderDirections(rows('Directions'), rows('Topics'));
   };
-  const readB64 = b64 => showWb(XLSX.read(b64, { type: 'base64', cellNF: true }));   // used only by the preview build
 
   // Opened from disk (file://): browsers block fetch, so offer a file picker for a local preview instead
   const localBar = () => {
@@ -248,7 +247,6 @@
     $('#pubs').innerHTML = $('#projects').innerHTML = '<p class="empty">Loading…</p>';
     try {
       if (!window.XLSX) throw new Error('SheetJS library did not load');
-      if (window.DB_BASE64) return readB64(window.DB_BASE64);
       const res = await fetch(DB_FILE + '?v=' + Date.now());
       if (!res.ok) throw new Error('HTTP ' + res.status);
       showWb(XLSX.read(await res.arrayBuffer(), { type: 'array', cellNF: true }));
