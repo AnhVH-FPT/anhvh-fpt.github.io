@@ -11,7 +11,8 @@
   };
   const DB_FILE = 'data/database.xlsx';
   const EMAIL = 'AnhVH54@fe.edu.vn';
-  const txt = v => String(v == null ? '' : v).trim();
+  // Cells typed or pasted in Excel may use Windows line breaks (CR LF): turn every line break into LF
+  const txt = v => String(v == null ? '' : v).replace(/\r\n?/g, '\n').trim();
   const esc = s => txt(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const linkify = s => esc(s).replace(/https?:\/\/[^\s<]+[^\s<.,;)]/g, u => `<a href="${u}" target="_blank" rel="noopener">${u.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</a>`);
 

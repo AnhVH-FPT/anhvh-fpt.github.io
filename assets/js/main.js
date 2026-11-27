@@ -14,7 +14,8 @@
      except ME, the name shown in bold in author lists. */
   const ME = 'Ha Anh Vu';
   const DB_FILE = 'data/database.xlsx';
-  const txt = v => String(v == null ? '' : v).trim();
+  // Cells typed or pasted in Excel may use Windows line breaks (CR LF): turn every line break into LF
+  const txt = v => String(v == null ? '' : v).replace(/\r\n?/g, '\n').trim();
   const row = r => {                                                   // a missing column simply reads as an empty cell
     const o = Object.fromEntries(Object.entries(r).map(([k, v]) => [k.trim().toLowerCase(), txt(v)]));
     return new Proxy(o, { get: (t, k) => (k in t ? t[k] : '') });
