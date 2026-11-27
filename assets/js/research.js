@@ -56,24 +56,26 @@
     return out;
   };
 
-  // "Label: text" lines become headed blocks, "(1) ..." lines become list items.
-  const richText = s => {
-    const blocks = []; let cur = null;
-    txt(s).split('\n').map(l => l.trim()).filter(Boolean).forEach(l => {
-      const m = l.match(/^([A-Z][A-Za-z /&-]{2,40}):\s*(.*)$/);
-      if (m) { cur = { label: m[1], text: m[2], items: [] }; blocks.push(cur); return; }
-      const it = l.match(/^\(?(\d+)[).]\s*(.*)$/);
-      if (!cur) { cur = { label: '', text: '', items: [] }; blocks.push(cur); }
-      if (it) cur.items.push(it[2]); else cur.text += (cur.text ? ' ' : '') + l;
-    });
-    return blocks.map(b => `<div class="blk">${b.label ? `<h5>${esc(b.label)}</h5>` : ''}${b.text ? `<p>${linkify(b.text)}</p>` : ''}${
-      b.items.length ? `<ol>${b.items.map(i => `<li>${linkify(i)}</li>`).join('')}</ol>` : ''}</div>`).join('');
-  };
-  const firstSentence = s => { const m = txt(s).match(/Context:\s*([^\n]*)/i); return m ? m[1] : txt(s).split('\n')[0]; };
 
-  // Topics sheet: one column per field. Empty cells are simply not shown.
-  const DESC_FIELDS = ['Context', 'Problem Formulation', 'Gap', 'Proposed Approach', 'Implementation Steps', 'Key Knowledge to Learn'];
-  const EXP_FIELDS = ['Deliverables', 'Expected Results', 'Baselines', 'Metrics', 'Experimental Protocol', 'Minimum Success Criteria'];
+  // Research Description and Research Expectation follow a fixed template (see the Hướng dẫn sheet):
+  //   Context: text            <- "Label:" at the start of a line opens a field
+  //   Implementation steps:
+  //   (1) first step           <- "(1) ..." lines become a numbered list
+  // Only these labels are shown, always in this order; a missing or empty field is skipped,
+  // and text that is not under one of these labels is not shown.
+  const DESC_FIELDS = ['Context', 'Problem formulation', 'Gap', 'Proposed approach', 'Implementation steps', 'Key knowledge to learn'];
+  const EXP_FIELDS = ['Deliverables', 'Expected results', 'Baselines', 'Metrics', 'Experimental protocol', 'Minimum success criteria'];
+  const parseFields = (text, fields) => {
+    const keys = new Map(fields.map(f => [f.toLowerCase(), f])), out = {}, skipped = [];
+    let cur = null;
+    txt(text).split('\n').forEach(line => {
+      const m = line.match(/^\s*([A-Za-z][A-Za-z /&-]*?)\s*:\s*(.*)$/), key = m && keys.get(m[1].toLowerCase().replace(/\s+/g, ' '));
+      if (key) { cur = key; out[cur] = m[2].trim(); return; }
+      if (!line.trim()) return;
+      if (cur) out[cur] += '\n' + line.trim(); else skipped.push(line.trim());
+    });
+    return { out, skipped };
+  };
   // A field: plain lines become a paragraph, "(1) ..." lines a numbered list
   const fieldHtml = (label, value) => {
     const lines = txt(value).split('\n').map(l => l.trim()).filter(Boolean);
@@ -82,7 +84,7 @@
     return `<div class="blk"><h5>${esc(label)}</h5>${text.length ? `<p>${linkify(text.join(' '))}</p>` : ''}${
       items.length ? `<ol>${items.map(l => `<li>${linkify(l.replace(/^\(?\d+[).]\s*/, ''))}</li>`).join('')}</ol>` : ''}</div>`;
   };
-  const fieldsHtml = (t, fields, oldText) => fields.map(f => fieldHtml(f, t.fields[f])).join('') || richText(oldText);
+  const fieldsHtml = (t, fields) => fields.map(f => fieldHtml(f, t.fields[f])).join('') || '<p class="muted">Details coming soon.</p>';
 
   /* ---------- pagination ---------- */
   // Page buttons: 1 … 4 5 [6] 7 8 … 25
@@ -135,7 +137,7 @@
         <div class="thead">
           <h3>${esc(t.en)}</h3>
           ${t.vi ? `<p class="vi">${esc(t.vi)}</p>` : ''}
-          <p class="teaser">${esc(t.fields.Context || firstSentence(t.desc))}</p>
+          <p class="teaser">${esc((t.fields.Context || '').split('\n')[0])}</p>
           <div class="tmeta">
             <span class="tdir">${esc(t.dirName)}</span>
             ${closed ? `<span class="badge thesis">${esc(t.status)}</span>` : ''}
@@ -145,8 +147,8 @@
       </summary>
       <div class="tbody">
         <div class="tcols">
-          <div><h4>Research description</h4>${fieldsHtml(t, DESC_FIELDS, t.desc)}</div>
-          <div><h4>Research expectation</h4>${fieldsHtml(t, EXP_FIELDS, t.expect)}
+          <div><h4>Research description</h4>${fieldsHtml(t, DESC_FIELDS)}</div>
+          <div><h4>Research expectation</h4>${fieldsHtml(t, EXP_FIELDS)}
             ${ds.length ? `<h4>Datasets</h4><ul class="dlist">${ds.map(d => `<li>${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.name)}</a>` : esc(d.name)}</li>`).join('')}</ul>` : ''}
           </div>
         </div>
@@ -192,15 +194,20 @@
       d.count++;
       TOPICS.push({ i, code: r.code || `${d.code}-${String(i + 1).padStart(2, '0')}`, dir: d.code, dirName: d.name,
         en: r['english title'], vi: r['vietnamese title'], dataset: r.dataset, status: r.status,
-        desc: r['research description'], expect: r['research expectation'],          // older one-column layout, still understood
-        fields: Object.fromEntries([...DESC_FIELDS, ...EXP_FIELDS].map(f => [f, r[f.toLowerCase()]])) });
+        desc: r['research description'], expect: r['research expectation'] });
     });
     DIRS = DIRS.filter(d => d.count);
     if (wantDir && dirByCode(wantDir)) dir = dirByCode(wantDir).code;
     // Order: directions as in the Directions sheet, then by topic code number (MI-2 before MI-10), whatever the row order
     const rank = new Map(DIRS.map((d, i) => [d.code, i]));
     TOPICS.sort((a, b) => rank.get(a.dir) - rank.get(b.dir) || a.code.localeCompare(b.code, undefined, { numeric: true }) || a.i - b.i);
-    TOPICS.forEach(x => { x.hay = norm([x.code, x.en, x.vi, x.dataset, x.desc, x.expect, ...Object.values(x.fields)].join(' ')); });
+    TOPICS.forEach(x => {
+      const d = parseFields(x.desc, DESC_FIELDS), e = parseFields(x.expect, EXP_FIELDS);
+      x.fields = { ...d.out, ...e.out };
+      // Help the editor: lines that do not follow the template are listed in the browser console (F12)
+      if (d.skipped.length || e.skipped.length) console.warn(`Topic ${x.code}: text outside the template is not shown:`, [...d.skipped, ...e.skipped]);
+      x.hay = norm([x.code, x.en, x.vi, x.dataset, x.desc, x.expect].join(' '));
+    });
     $('#onlyWrap').hidden = !TOPICS.some(isClosed);
     $('#dirs').innerHTML = `<button type="button" data-dir="all">All directions <em>${TOPICS.length}</em></button>` +
       DIRS.map(d => `<button type="button" data-dir="${esc(d.code)}">${esc(d.name)} <em>${d.count}</em></button>`).join('');
