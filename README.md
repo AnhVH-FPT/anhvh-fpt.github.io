@@ -9,7 +9,7 @@ academic-site/
 ├── index.html            # Page content 
 ├── README.md
 ├── data/
-│   └── database.xlsx     # Publications and projects: edit this file in Excel
+│   └── database.xlsx     # The site database: publications, projects, topics, venues (edit in Excel)
 ├── .nojekyll             # Tells GitHub Pages to serve files as they are
 └── assets/
     ├── css/style.css     # Design tokens (light/dark) and layout
@@ -63,15 +63,23 @@ The Excel file is public once deployed, so do not put private information in it.
 
 ## Research topics page (research.html)
 
-"Join my research group" (hero button, the "Join us" menu item and the Join section) opens `research.html` (a separate page in the same tab). It reads `data/research.xlsx`:
+"Join my research group" (hero button, the "Join us" menu item and the Join section) opens `research.html`. It reads the same workbook as the main page, `data/database.xlsx`, so **the whole site has one database**. Edit the workbook in Excel, save, commit and push (GitHub Desktop): the site shows the change after GitHub Pages redeploys (1 to 2 minutes). No code changes are needed. The workbook's **Instructions** sheet explains every sheet in detail.
 
-- **One sheet per research direction.** A sheet counts as a topic sheet when its header row contains `English Title`; title rows above the header are fine. Columns: `No.`, `Vietnamese Title`, `English Title`, `Dataset`, `Research Description`, `Research Expectation`. The direction name is taken from the first cell of the sheet (text before the dash). Topic codes are built from the direction and the `No.` column (for example `MI-01`), and `research.html#MI-01` opens that topic directly.
-- **Optional `Status` column.** Add it to mark topics as taken (`Taken`, `Assigned`, `Closed` or `Full`): the Apply button is hidden for them and an "Open topics only" filter appears.
-- **Overview sheet** (optional): the last text column of each direction row is shown as "Current trends".
-- **Free Journal List** (`Journal name`, `Publisher`, `Rank`, `Link`) and **Conferences** sheets feed the "Where to publish" section.
-- Inside descriptions, lines like `Gap: ...` become headings and `(1) ...` lines become numbered lists.
+| Sheet | Used by | One row is |
+|---|---|---|
+| Publications | index.html | a paper |
+| Projects | index.html | a supervised thesis |
+| Directions | research.html | a research direction: `Code` (CV, MI, XAI, EDGE, VLM), `Direction`, `Focus` |
+| Topics | research.html | a topic: `Code` (for example `MI-51`, never renumber), `Direction` (a code), `Status` (`Open` or `Taken`), titles, dataset, description, expectation |
+| Conferences | research.html | a conference: `Directions` (codes or `All`), `CORE Rank`, `Submission Deadline`, `Held In` (English month names), `Hybrid`, `Website` |
+| Journals | research.html | a no-APC journal: `Rank` (Q1 to Q4), `Directions` (codes or `All`), `Link` |
+| Venue Notes | research.html | a note shown under the Conferences or Journals table |
 
-To update topics, replace `data/research.xlsx` and push. After changing `assets/js/research.js` or `assets/css/research.css`, bump the `?v=` number in `research.html` so browsers fetch the new file.
+Rules: keep sheet names and the header row (row 1) as they are; column order does not matter. Conferences are sorted by deadline on the site, so their row order does not matter either. The Journals `Directions` column was first filled automatically from journal names, so review it.
+
+On the page, topics can be filtered by direction and searched; venues can be filtered by rank, direction, deadline month (including "Next 3 months") and the month the conference is held. Topics and venues are paged (5 to 25 per page). `research.html#MI-01` opens a topic directly.
+
+After changing `assets/js/research.js` or `assets/css/research.css`, bump the `?v=` number in `research.html` so browsers fetch the new file.
 
 **Backup:** the site as it was before this page was added is kept in branch `backup/site-before-research-page` and tag `backup-2026-11-27`. To roll back: `git checkout main && git reset --hard backup-2026-11-27 && git push --force`.
 

@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/style.css">
-<link rel="stylesheet" href="assets/css/research.css?v=4">
+<link rel="stylesheet" href="assets/css/research.css?v=5">
 </head>
 <body>
 
@@ -58,7 +58,7 @@
   </div>
 </div></section>
 
-<!-- ================= TOPICS (rendered by assets/js/research.js from data/research.xlsx) ================= -->
+<!-- ================= TOPICS (rendered by assets/js/research.js from the Topics sheet of data/database.xlsx) ================= -->
 <section id="topics"><div class="wrap">
   <h2>Research topics</h2>
   <p class="intro">Every topic uses public datasets and is scoped for 3 to 4 months on a single RTX 4060/4090 GPU. Click a topic to see the full description.</p>
@@ -80,12 +80,18 @@
   <h2>Where to publish</h2>
   <p class="intro">Target venues for finished projects: journals that charge no publication fee (APC) and Scopus-indexed annual conferences, sorted by submission deadline.</p>
   <div class="seg" role="tablist" aria-label="Venue type"><button type="button" data-tab="conf" class="on">Conferences</button><button type="button" data-tab="jour">Free journals</button></div>
-  <div class="tools">
-    <div id="venueFilter" class="dirs small"></div>
-    <label class="per">Show <select id="vper" aria-label="Venues per page"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>25</option></select> per page</label>
+  <div id="venueFilter" class="dirs small" role="group" aria-label="Filter by rank"></div>
+  <div class="vfilters">
+    <label>Direction <select id="vdir"></select></label>
+    <label class="conf-only">Deadline <select id="vdl"></select></label>
+    <label class="conf-only">Held in <select id="vheld"></select></label>
+    <button type="button" class="mini" id="vreset">Reset filters</button>
+    <span class="vright"><span class="count" id="vcount" aria-live="polite"></span>
+    <label class="per">Show <select id="vper" aria-label="Venues per page"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>25</option></select> per page</label></span>
   </div>
   <div id="venueBox" class="tablewrap"><p class="empty">Loading…</p></div>
   <nav class="pager" id="vpager" aria-label="Venue pages"></nav>
+  <div class="vnotes" id="vnotes"></div>
 </div></section>
 
 <!-- ================= CONTACT ================= -->
@@ -105,6 +111,6 @@
 <footer><div class="wrap">&copy; 2026 Ha Anh Vu. <a href="index.html">Back to the main page</a></div></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="assets/js/research.js?v=4"></script>
+<script src="assets/js/research.js?v=5"></script>
 </body>
 </html>

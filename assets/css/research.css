@@ -91,8 +91,19 @@
 .pager button.on{background:#1b4dff;border-color:#1b4dff;color:#fff}
 .pager button:disabled{opacity:.4;cursor:default}
 .pager .gap{color:var(--muted);padding:0 4px}
-#venues .tools{justify-content:space-between;align-items:flex-start}
-#venues .tools .dirs{margin-bottom:0}
+/* Venue filters */
+.vfilters{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin:4px 0 14px}
+.vfilters>label{font-size:.9rem;color:var(--muted);display:flex;gap:6px;align-items:center}
+.vfilters select{padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;max-width:240px}
+.vfilters [hidden]{display:none}
+.vright{margin-left:auto;display:flex;gap:16px;align-items:center}
+.vright .count{margin:0}
+.tablewrap .dtag{display:inline-block;margin:0 2px 2px 0}
+.vnotes{margin-top:18px;font-size:.88rem;color:var(--muted)}
+.vnotes summary{cursor:pointer;font-weight:600;color:var(--ink)}
+.vnotes ul{padding-left:18px;margin-top:8px}
+.vnotes li{margin-bottom:4px}
+@media (max-width:820px){.vright{margin-left:0}}
 
 /* Contact (compact) */
 section.contact{padding:48px 0}

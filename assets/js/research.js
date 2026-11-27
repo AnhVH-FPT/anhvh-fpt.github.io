@@ -1,4 +1,5 @@
-/* Research topics page: reads data/research.xlsx (one sheet per research direction, plus journals and conferences). */
+/* Research topics page. Everything comes from data/database.xlsx, the same workbook the main page uses:
+   sheets Directions, Topics, Conferences, Journals and Venue Notes (see its Instructions sheet). */
 (() => {
   'use strict';
   const root = document.documentElement;
@@ -8,7 +9,7 @@
     get: k => { try { return localStorage.getItem(k); } catch { return null; } },
     set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } }
   };
-  const DB_FILE = 'data/research.xlsx';
+  const DB_FILE = 'data/database.xlsx';
   const EMAIL = 'AnhVH54@fe.edu.vn';
   const txt = v => String(v == null ? '' : v).trim();
   const esc = s => txt(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -23,20 +24,20 @@
   });
 
   /* ---------- reading sheets ---------- */
-  // Each sheet may have title rows above the header: find the header row by its column names.
+  // Rows of a sheet as objects keyed by the lower-case header. The header is found by its column names,
+  // so title rows above it do no harm. A missing column reads as ''.
   const table = (ws, test) => {
     const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', blankrows: false });
     const h = rows.findIndex(r => test(r.map(c => txt(c).toLowerCase())));
     if (h < 0) return null;
     const head = rows[h].map(c => txt(c).toLowerCase());
-    const items = rows.slice(h + 1).map(r => {
-      const o = {}; head.forEach((k, i) => { if (k) o[k] = txt(r[i]); }); return o;
+    return rows.slice(h + 1).map(r => {
+      const o = {}; head.forEach((k, i) => { if (k) o[k] = txt(r[i]); });
+      return new Proxy(o, { get: (t, k) => (k in t ? t[k] : '') });
     });
-    return { title: txt((rows[0] || [])[0]), subtitle: txt((rows[1] || [])[0]), items };
   };
-
-  const CODES = [[/medical/i, 'MI'], [/explain|trust|xai/i, 'XAI'], [/iot|edge/i, 'EDGE'], [/language|vlm/i, 'VLM'], [/vision|image/i, 'CV']];
-  const codeOf = name => (CODES.find(([re]) => re.test(name)) || [, name.replace(/[^A-Z]/g, '').slice(0, 3) || 'T'])[1];
+  const findTable = (wb, test) => { for (const n of wb.SheetNames) { const t = table(wb.Sheets[n], test); if (t) return t; } return []; };
+  const pick = (r, ...keys) => { for (const k of keys) if (r[k]) return r[k]; return ''; };
 
   // "• Name\nhttps://..." -> [{name, url}]
   const datasets = s => {
@@ -83,9 +84,16 @@
     return +sel.value || 10;
   };
 
-  /* ---------- topics ---------- */
-  let TOPICS = [], DIRS = [], dir = 'all', hasStatus = false, page = 1, per = savedPer('per');
-  const isClosed = t => /taken|assigned|closed|full|ongoing|in progress|đã/i.test(t.status);
+  /* ---------- directions (sheet "Directions": Code, Direction, Focus) ---------- */
+  let DIRS = [];                                        // [{code, name, focus, count}] in sheet order
+  const dirByCode = code => DIRS.find(d => d.code.toLowerCase() === txt(code).toLowerCase());
+  // "CV, MI" / "All" / "" -> list of direction codes ('All' and blank match every direction)
+  const dirCodes = s => /^\s*(all\b.*)?$/i.test(s) ? DIRS.map(d => d.code)
+    : txt(s).split(/[,;/]+/).map(x => (dirByCode(x) || {}).code).filter(Boolean);
+
+  /* ---------- topics (sheet "Topics") ---------- */
+  let TOPICS = [], dir = 'all', page = 1, per = savedPer('per');
+  const isClosed = t => /taken|assigned|closed|full/i.test(t.status);
 
   const mailParts = t => {
     const subject = `[Research Topic ${t.code}] ${t.en}`;
@@ -100,17 +108,17 @@
   const card = t => {
     const closed = isClosed(t);
     const ds = datasets(t.dataset);
-    return `<details class="topic${closed ? ' closed' : ''}" id="${t.code}">
+    return `<details class="topic${closed ? ' closed' : ''}" id="${esc(t.code)}">
       <summary>
-        <span class="tcode">${t.code}</span>
+        <span class="tcode">${esc(t.code)}</span>
         <div class="thead">
           <h3>${esc(t.en)}</h3>
           ${t.vi ? `<p class="vi">${esc(t.vi)}</p>` : ''}
           <p class="teaser">${esc(firstSentence(t.desc))}</p>
           <div class="tmeta">
-            <span class="tdir">${esc(t.dir)}</span>
-            ${hasStatus && t.status ? `<span class="badge ${closed ? 'thesis' : 'published'}">${esc(t.status)}</span>` : ''}
-            ${ds.filter(d => d.url || d.name).slice(0, 3).map(d => `<span class="dtag">${esc(d.name.replace(/\s*\(.*?\)\s*/g, ' ').trim())}</span>`).join('')}
+            <span class="tdir">${esc(t.dirName)}</span>
+            ${closed ? `<span class="badge thesis">${esc(t.status)}</span>` : ''}
+            ${ds.slice(0, 3).map(d => `<span class="dtag">${esc(d.name.replace(/\s*\(.*?\)\s*/g, ' ').trim())}</span>`).join('')}
           </div>
         </div>
       </summary>
@@ -124,8 +132,8 @@
         <div class="tact">
           ${closed ? '<span class="muted">This topic is already taken.</span>'
             : `<a class="btn pri" href="${mailto(t)}">Apply for this topic</a>`}
-          ${closed ? '' : `<button type="button" class="btn copy-mail" data-code="${t.code}">Copy application text</button>`}
-          <button type="button" class="btn copy" data-code="${t.code}">Copy link</button>
+          ${closed ? '' : `<button type="button" class="btn copy-mail" data-code="${esc(t.code)}">Copy application text</button>`}
+          <button type="button" class="btn copy" data-code="${esc(t.code)}">Copy link</button>
           ${closed ? '' : `<p class="tnote">Email app did not open? Copy the application text and send it to <strong>${EMAIL}</strong> from Outlook or Gmail, or message me on Zalo: <strong>0366765835</strong>.</p>`}
         </div>
       </div>
@@ -145,38 +153,33 @@
     $('#pager').innerHTML = pagerHtml(page, pages);
     $('#count').textContent = list.length ? `${from + 1}–${from + shown.length} of ${list.length} topics` : `0 of ${TOPICS.length} topics`;
     $$('#dirs button').forEach(b => b.classList.toggle('on', b.dataset.dir === dir));
-    const d = DIRS.find(x => x.name === dir);
+    const d = dirByCode(dir);
     $('#dirfocus').innerHTML = d && d.focus ? `<strong>Current trends:</strong> ${esc(d.focus)}` : '';
   };
 
   const renderTopics = wb => {
-    // Optional "Focus" text per direction from the Overview sheet
-    const focus = {};
-    const ov = wb.SheetNames.find(n => /overview/i.test(n));
-    if (ov) XLSX.utils.sheet_to_json(wb.Sheets[ov], { header: 1, defval: '' }).forEach(r => {
-      const cells = r.map(txt).filter(Boolean), last = cells[cells.length - 1] || '';
-      if (cells.length >= 2 && last.length > 30) focus[cells[0]] = last;     // the count column may be an uncached formula
+    DIRS = findTable(wb, h => h.includes('code') && h.includes('direction') && !h.includes('english title'))
+      .filter(r => r.code && r.direction)
+      .map(r => ({ code: r.code, name: r.direction, focus: pick(r, 'focus (current research trends)', 'focus'), count: 0 }));
+    const rows = findTable(wb, h => h.includes('english title')).filter(r => r['english title']);
+    rows.forEach((r, i) => {
+      let d = dirByCode(r.direction) || DIRS.find(x => x.name.toLowerCase() === r.direction.toLowerCase());
+      if (!d) {                                                     // a direction code missing from the Directions sheet
+        d = { code: r.direction || 'Other', name: r.direction || 'Other', focus: '', count: 0 };
+        DIRS.push(d);
+      }
+      d.count++;
+      TOPICS.push({ i, code: r.code || `${d.code}-${String(i + 1).padStart(2, '0')}`, dir: d.code, dirName: d.name,
+        en: r['english title'], vi: r['vietnamese title'], dataset: r.dataset, status: r.status,
+        desc: r['research description'], expect: r['research expectation'] });
     });
-    wb.SheetNames.forEach(n => {
-      const t = table(wb.Sheets[n], h => h.includes('english title'));
-      if (!t) return;
-      const name = (t.title.split(/\s+[—–-]\s+/)[0] || n).trim();
-      const code = codeOf(name);
-      const short = name.replace(/\s*\(.*?\)/g, '');
-      const fkey = Object.keys(focus).find(k => k.replace(/\s*\(.*?\)/g, '').toLowerCase() === short.toLowerCase());
-      const items = t.items.filter(r => r['english title']).map((r, i) => ({
-        code: code + '-' + String(r['no.'] || i + 1).padStart(2, '0'),
-        dir: short, en: r['english title'], vi: r['vietnamese title'] || '', dataset: r.dataset || '',
-        desc: r['research description'] || '', expect: r['research expectation'] || '', status: r.status || ''
-      }));
-      items.forEach(x => { x.hay = norm([x.code, x.en, x.vi, x.dataset, x.desc, x.expect].join(' ')); });
-      DIRS.push({ name: short, count: items.length, focus: fkey ? focus[fkey] : '' });
-      TOPICS.push(...items);
-    });
-    hasStatus = TOPICS.some(t => t.status);
-    $('#onlyWrap').hidden = !hasStatus;
+    DIRS = DIRS.filter(d => d.count);
+    const rank = new Map(DIRS.map((d, i) => [d.code, i]));
+    TOPICS.sort((a, b) => rank.get(a.dir) - rank.get(b.dir) || a.i - b.i);  // directions in sheet order, then row order
+    TOPICS.forEach(x => { x.hay = norm([x.code, x.en, x.vi, x.dataset, x.desc, x.expect].join(' ')); });
+    $('#onlyWrap').hidden = !TOPICS.some(isClosed);
     $('#dirs').innerHTML = `<button type="button" data-dir="all">All directions <em>${TOPICS.length}</em></button>` +
-      DIRS.map(d => `<button type="button" data-dir="${esc(d.name)}">${esc(d.name)} <em>${d.count}</em></button>`).join('');
+      DIRS.map(d => `<button type="button" data-dir="${esc(d.code)}">${esc(d.name)} <em>${d.count}</em></button>`).join('');
     drawTopics();
     openFromHash();
   };
@@ -224,43 +227,91 @@
   });
   $$('.copy-val').forEach(b => b.addEventListener('click', () => copy(b, b.dataset.copy, 'Copied')));
 
-  /* ---------- venues ---------- */
-  let CONF = [], JOUR = [], tab = 'conf', vf = 'all', vpage = 1, vper = savedPer('vper');
-  const RANKS = { conf: r => r['core rank'] || 'Not ranked', jour: r => r.rank || '' };
+  /* ---------- venues (sheets "Conferences", "Journals", "Venue Notes") ---------- */
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  // "Mid December – January" -> [12, 1]; "February–March" -> [2, 3]; "July (round 1) / September (round 2)" -> [7, 9]
+  const monthsOf = s => {
+    const out = new Set();
+    txt(s).replace(/\(.*?\)/g, ' ').split('/').forEach(part => {
+      const found = [...part.matchAll(/jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec/gi)]
+        .map(m => MONTHS.findIndex(x => x.slice(0, 3).toLowerCase() === m[0].toLowerCase()) + 1);
+      if (found.length === 2 && /[–—-]|\bto\b/.test(part)) {                      // a range, possibly across the new year
+        for (let m = found[0], n = 0; n < 12; m = m % 12 + 1, n++) { out.add(m); if (m === found[1]) break; }
+      } else found.forEach(m => out.add(m));
+    });
+    return [...out];
+  };
+  const thisMonth = new Date().getMonth() + 1;
+  const soon = new Set([0, 1, 2].map(k => (thisMonth - 1 + k) % 12 + 1));       // this month and the next two
+
+  let CONF = [], JOUR = [], NOTES = [], tab = 'conf', vf = 'all', vpage = 1, vper = savedPer('vper');
+  const vsel = { dir: 'all', dl: 'any', held: 'any' };
+  const RANKS = { conf: r => r.rank || 'Not ranked', jour: r => r.rank };
+  const venueRows = (data, rk, ignore) => data.filter(x =>
+    (ignore === 'rank' || vf === 'all' || rk(x) === vf)
+    && (vsel.dir === 'all' || x.dirs.includes(vsel.dir))
+    && (tab !== 'conf' || vsel.dl === 'any' || (vsel.dl === 'soon' ? x.dl.some(m => soon.has(m)) : x.dl.includes(+vsel.dl)))
+    && (tab !== 'conf' || vsel.held === 'any' || x.held.includes(+vsel.held)));
+
   const drawVenues = () => {
     const data = tab === 'conf' ? CONF : JOUR, rk = RANKS[tab];
     const order = r => ({ 'A*': '0', A: '1', B: '2', C: '3' }[r] || (/^Q\d/.test(r) ? r : 'z' + r));   // A* first; "Not ranked" last
     const ranks = [...new Set(data.map(rk))].filter(Boolean).sort((a, b) => order(a).localeCompare(order(b)));
     if (!['all', ...ranks].includes(vf)) vf = 'all';
-    $('#venueFilter').innerHTML = [`<button type="button" data-r="all">All <em>${data.length}</em></button>`,
-      ...ranks.map(r => `<button type="button" data-r="${esc(r)}">${tab === 'conf' && /^[A-C]/.test(r) ? 'CORE ' : ''}${esc(r)} <em>${data.filter(x => rk(x) === r).length}</em></button>`)].join('');
+    const base = venueRows(data, rk, 'rank');                                     // rank counts follow the other filters
+    $('#venueFilter').innerHTML = [`<button type="button" data-r="all">All <em>${base.length}</em></button>`,
+      ...ranks.map(r => `<button type="button" data-r="${esc(r)}">${tab === 'conf' && /^[A-C]/.test(r) ? 'CORE ' : ''}${esc(r)} <em>${base.filter(x => rk(x) === r).length}</em></button>`)].join('');
     $$('#venueFilter button').forEach(b => b.classList.toggle('on', b.dataset.r === vf));
     $$('#venues .seg button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
-    const all = data.filter(x => vf === 'all' || rk(x) === vf), pages = Math.max(1, Math.ceil(all.length / vper));
+    $$('.conf-only').forEach(el => { el.hidden = tab !== 'conf'; });
+
+    const all = venueRows(data, rk), pages = Math.max(1, Math.ceil(all.length / vper));
     vpage = Math.min(Math.max(1, vpage), pages);
     const rows = all.slice((vpage - 1) * vper, vpage * vper);
     $('#vpager').innerHTML = pagerHtml(vpage, pages);
+    $('#vcount').textContent = all.length ? `${(vpage - 1) * vper + 1}–${(vpage - 1) * vper + rows.length} of ${all.length}` : '';
     const a = (u, l) => u ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(l)}</a>` : esc(l);
-    $('#venueBox').innerHTML = tab === 'conf'
+    const dirTags = x => x.all ? '<span class="dtag">All directions</span>' : x.dirs.map(c => `<span class="dtag" title="${esc((dirByCode(c) || {}).name)}">${esc(c)}</span>`).join(' ');
+    $('#venueBox').innerHTML = !rows.length ? '<p class="empty">No venue matches these filters.</p>' : tab === 'conf'
       ? `<table><thead><tr><th>Conference</th><th>Rank</th><th>Directions</th><th>Deadline</th><th>Start preparing</th><th>Held in</th><th>Hybrid</th></tr></thead><tbody>${
-        rows.map(r => `<tr><td><strong>${a(r.website, r.conference)}</strong><small>${esc(r['full name'])}</small></td><td>${esc(rk(r))}</td><td>${esc(r['research directions'])}</td><td>${esc(r['typical submission deadline'])}</td><td>${esc(r['suggested start of preparation'])}</td><td>${esc(r['typical conference month'])}</td><td>${/yes/i.test(r.hybrid) ? '<span class="badge published">Yes</span>' : esc(r.hybrid)}</td></tr>`).join('')}</tbody></table>`
-      : `<table><thead><tr><th>Journal</th><th>Publisher</th><th>Rank</th></tr></thead><tbody>${
-        rows.map(r => `<tr><td><strong>${a(r.link, r['journal name'])}</strong></td><td>${esc(r.publisher)}</td><td><span class="q q${esc(r.rank).slice(1)}">${esc(r.rank)}</span></td></tr>`).join('')}</tbody></table>`;
-    if (!rows.length) $('#venueBox').innerHTML = '<p class="empty">No venues listed.</p>';
+        rows.map(r => `<tr><td><strong>${a(r.website, r.name)}</strong><small>${esc(r.full)}</small></td><td>${esc(rk(r))}</td><td>${dirTags(r)}</td><td>${esc(r.deadline)}</td><td>${esc(r.prep)}</td><td>${esc(r.heldText)}</td><td>${/yes/i.test(r.hybrid) ? '<span class="badge published">Yes</span>' : esc(r.hybrid)}</td></tr>`).join('')}</tbody></table>`
+      : `<table><thead><tr><th>Journal</th><th>Publisher</th><th>Directions</th><th>Rank</th></tr></thead><tbody>${
+        rows.map(r => `<tr><td><strong>${a(r.link, r.name)}</strong></td><td>${esc(r.publisher)}</td><td>${dirTags(r)}</td><td><span class="q q${esc(r.rank).slice(1)}">${esc(r.rank)}</span></td></tr>`).join('')}</tbody></table>`;
+    const notes = NOTES.filter(n => /^all$/i.test(n.to) || n.to.toLowerCase().startsWith(tab === 'conf' ? 'conf' : 'journ'));
+    $('#vnotes').innerHTML = notes.length ? `<details><summary>Notes (${notes.length})</summary><ul>${notes.map(n => `<li>${linkify(n.note)}</li>`).join('')}</ul></details>` : '';
   };
+
   const renderVenues = wb => {
-    wb.SheetNames.forEach(n => {
-      const c = table(wb.Sheets[n], h => h.includes('conference') && h.includes('website'));
-      if (c) CONF = c.items.filter(r => r.conference);
-      const j = table(wb.Sheets[n], h => h.includes('journal name'));
-      if (j) JOUR = j.items.filter(r => r['journal name']);
+    const dirsOf = s => ({ dirs: dirCodes(s), all: /^\s*(all\b.*)?$/i.test(s) });
+    CONF = findTable(wb, h => h.includes('conference') && h.includes('website')).filter(r => r.conference).map((r, i) => {
+      const deadline = pick(r, 'submission deadline', 'typical submission deadline'), heldText = pick(r, 'held in', 'typical conference month');
+      return { i, name: r.conference, full: r['full name'], rank: r['core rank'], deadline, heldText, hybrid: r.hybrid, website: r.website,
+        prep: pick(r, 'start preparing', 'suggested start of preparation'), dl: monthsOf(deadline), held: monthsOf(heldText),
+        ...dirsOf(pick(r, 'directions', 'research directions')) };
     });
+    // Sorted by deadline (January first) so the sheet can be kept in any order
+    const firstDl = x => x.dl.length ? Math.min(...x.dl) : 99;
+    CONF.sort((a, b) => firstDl(a) - firstDl(b) || a.i - b.i);
+    JOUR = findTable(wb, h => h.some(x => /^journal( name)?$/.test(x)) && h.includes('rank'))
+      .map(r => ({ name: pick(r, 'journal', 'journal name'), publisher: r.publisher, rank: r.rank, link: r.link, ...dirsOf(r.directions) }))
+      .filter(r => r.name && !/^notes?:?$/i.test(r.name) && !r.name.startsWith('•'));
+    NOTES = findTable(wb, h => h.includes('note') && h.includes('applies to')).filter(r => r.note).map(r => ({ to: r['applies to'] || 'All', note: r.note }));
+
     if (!CONF.length && !JOUR.length) { $('#venues').hidden = true; $('a[href="#venues"]').hidden = true; return; }
     if (!CONF.length) tab = 'jour';
+    const opt = (v, l) => `<option value="${v}">${esc(l)}</option>`;
+    $('#vdir').innerHTML = opt('all', 'All directions') + DIRS.map(d => opt(esc(d.code), d.name)).join('');
+    $('#vdl').innerHTML = opt('any', 'Any month') + opt('soon', 'Next 3 months') + MONTHS.map((m, i) => opt(i + 1, m)).join('');
+    $('#vheld').innerHTML = opt('any', 'Any month') + MONTHS.map((m, i) => opt(i + 1, m)).join('');
     drawVenues();
   };
   $('#venues .seg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { tab = b.dataset.tab; vf = 'all'; vpage = 1; drawVenues(); } });
   $('#venueFilter').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { vf = b.dataset.r; vpage = 1; drawVenues(); } });
+  [['#vdir', 'dir'], ['#vdl', 'dl'], ['#vheld', 'held']].forEach(([id, k]) => $(id).addEventListener('change', e => { vsel[k] = e.target.value; vpage = 1; drawVenues(); }));
+  $('#vreset').addEventListener('click', () => {
+    vf = 'all'; vsel.dir = 'all'; vsel.dl = vsel.held = 'any'; vpage = 1;
+    $('#vdir').value = 'all'; $('#vdl').value = $('#vheld').value = 'any'; drawVenues();
+  });
   $('#vper').addEventListener('change', () => { vper = +$('#vper').value; store.set('vper', vper); vpage = 1; drawVenues(); });
   $('#vpager').addEventListener('click', e => {
     const b = e.target.closest('button[data-p]'); if (!b || b.disabled) return;
@@ -273,14 +324,14 @@
   (async () => {
     try {
       if (!window.XLSX) throw new Error('The Excel reader library (SheetJS from cdnjs) did not load. Check your internet connection or ad blocker.');
-      if (window.RESEARCH_BASE64) return show(XLSX.read(window.RESEARCH_BASE64, { type: 'base64' }));
       const res = await fetch(DB_FILE + '?v=' + Date.now());
-      if (!res.ok) throw new Error(res.status === 404 ? 'data/research.xlsx was not found in the repository.' : 'HTTP ' + res.status);
+      if (!res.ok) throw new Error(res.status === 404 ? DB_FILE + ' was not found in the repository.' : 'HTTP ' + res.status);
       show(XLSX.read(await res.arrayBuffer(), { type: 'array' }));
+      if (!TOPICS.length) $('#list').innerHTML = '<p class="empty">No topics yet: add rows to the Topics sheet of data/database.xlsx.</p>';
     } catch (err) {
       console.error(err);
       const msg = location.protocol === 'file:'
-        ? 'Opened from disk: browsers block reading data/research.xlsx. Run a local server (python -m http.server) or view the GitHub Pages site.'
+        ? 'Opened from disk: browsers block reading ' + DB_FILE + '. Run a local server (python -m http.server) or view the GitHub Pages site.'
         : 'Could not load the topic list: ' + err.message;
       $('#list').innerHTML = $('#venueBox').innerHTML = `<p class="empty">${esc(msg)}</p>`;
     }
