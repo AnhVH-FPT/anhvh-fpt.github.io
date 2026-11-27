@@ -81,7 +81,7 @@ On the page, topics can be filtered by direction and searched; venues can be fil
 
 After changing `assets/js/research.js` or `assets/css/research.css`, bump the `?v=` number in `research.html` so browsers fetch the new file.
 
-**Backup:** the site as it was before this page was added is kept in branch `backup/site-before-research-page` and tag `backup-2026-11-27`. To roll back: `git checkout main && git reset --hard backup-2026-11-27 && git push --force`.
+**Earlier versions:** every past version is in the git history (GitHub Desktop, History tab). To undo a change, right-click its commit, choose "Revert changes in commit", then push.
 
 ## Troubleshooting: "Could not load data/database.xlsx"
 

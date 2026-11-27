@@ -78,5 +78,6 @@ Editing the workbook from code: use openpyxl, keep data validations (Direction, 
 
 ## Safety nets
 
-- Backup of the site before the research page was added: tag `backup-2026-11-27` and branch `backup/site-before-research-page` (local only, in `E:\Coding\Resume`).
+- `main` is the only branch; the old backup tag and branch were deleted at the owner's request. Earlier versions remain in the git history.
+- On index.html the phone number links to `https://zalo.me/0366765835` (opens a Zalo chat), not `tel:`.
 - Rolling back is a decision for the owner; explain the commands (README) rather than running a hard reset or force push.
