@@ -71,6 +71,19 @@
   };
   const firstSentence = s => { const m = txt(s).match(/Context:\s*([^\n]*)/i); return m ? m[1] : txt(s).split('\n')[0]; };
 
+  // Topics sheet: one column per field. Empty cells are simply not shown.
+  const DESC_FIELDS = ['Context', 'Problem Formulation', 'Gap', 'Proposed Approach', 'Implementation Steps', 'Key Knowledge to Learn'];
+  const EXP_FIELDS = ['Deliverables', 'Expected Results', 'Baselines', 'Metrics', 'Experimental Protocol', 'Minimum Success Criteria'];
+  // A field: plain lines become a paragraph, "(1) ..." lines a numbered list
+  const fieldHtml = (label, value) => {
+    const lines = txt(value).split('\n').map(l => l.trim()).filter(Boolean);
+    if (!lines.length) return '';
+    const items = lines.filter(l => /^\(?\d+[).]\s/.test(l)), text = lines.filter(l => !/^\(?\d+[).]\s/.test(l));
+    return `<div class="blk"><h5>${esc(label)}</h5>${text.length ? `<p>${linkify(text.join(' '))}</p>` : ''}${
+      items.length ? `<ol>${items.map(l => `<li>${linkify(l.replace(/^\(?\d+[).]\s*/, ''))}</li>`).join('')}</ol>` : ''}</div>`;
+  };
+  const fieldsHtml = (t, fields, oldText) => fields.map(f => fieldHtml(f, t.fields[f])).join('') || richText(oldText);
+
   /* ---------- pagination ---------- */
   // Page buttons: 1 … 4 5 [6] 7 8 … 25
   const pagerHtml = (page, pages) => {
@@ -122,7 +135,7 @@
         <div class="thead">
           <h3>${esc(t.en)}</h3>
           ${t.vi ? `<p class="vi">${esc(t.vi)}</p>` : ''}
-          <p class="teaser">${esc(firstSentence(t.desc))}</p>
+          <p class="teaser">${esc(t.fields.Context || firstSentence(t.desc))}</p>
           <div class="tmeta">
             <span class="tdir">${esc(t.dirName)}</span>
             ${closed ? `<span class="badge thesis">${esc(t.status)}</span>` : ''}
@@ -132,8 +145,8 @@
       </summary>
       <div class="tbody">
         <div class="tcols">
-          <div><h4>Research description</h4>${richText(t.desc)}</div>
-          <div><h4>Research expectation</h4>${richText(t.expect)}
+          <div><h4>Research description</h4>${fieldsHtml(t, DESC_FIELDS, t.desc)}</div>
+          <div><h4>Research expectation</h4>${fieldsHtml(t, EXP_FIELDS, t.expect)}
             ${ds.length ? `<h4>Datasets</h4><ul class="dlist">${ds.map(d => `<li>${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.name)}</a>` : esc(d.name)}</li>`).join('')}</ul>` : ''}
           </div>
         </div>
@@ -179,14 +192,15 @@
       d.count++;
       TOPICS.push({ i, code: r.code || `${d.code}-${String(i + 1).padStart(2, '0')}`, dir: d.code, dirName: d.name,
         en: r['english title'], vi: r['vietnamese title'], dataset: r.dataset, status: r.status,
-        desc: r['research description'], expect: r['research expectation'] });
+        desc: r['research description'], expect: r['research expectation'],          // older one-column layout, still understood
+        fields: Object.fromEntries([...DESC_FIELDS, ...EXP_FIELDS].map(f => [f, r[f.toLowerCase()]])) });
     });
     DIRS = DIRS.filter(d => d.count);
     if (wantDir && dirByCode(wantDir)) dir = dirByCode(wantDir).code;
     // Order: directions as in the Directions sheet, then by topic code number (MI-2 before MI-10), whatever the row order
     const rank = new Map(DIRS.map((d, i) => [d.code, i]));
     TOPICS.sort((a, b) => rank.get(a.dir) - rank.get(b.dir) || a.code.localeCompare(b.code, undefined, { numeric: true }) || a.i - b.i);
-    TOPICS.forEach(x => { x.hay = norm([x.code, x.en, x.vi, x.dataset, x.desc, x.expect].join(' ')); });
+    TOPICS.forEach(x => { x.hay = norm([x.code, x.en, x.vi, x.dataset, x.desc, x.expect, ...Object.values(x.fields)].join(' ')); });
     $('#onlyWrap').hidden = !TOPICS.some(isClosed);
     $('#dirs').innerHTML = `<button type="button" data-dir="all">All directions <em>${TOPICS.length}</em></button>` +
       DIRS.map(d => `<button type="button" data-dir="${esc(d.code)}">${esc(d.name)} <em>${d.count}</em></button>`).join('');

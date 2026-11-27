@@ -70,7 +70,7 @@ The Excel file is public once deployed, so do not put private information in it.
 | Publications | index.html | a paper |
 | Projects | index.html | a supervised thesis |
 | Directions | research.html | a research direction: `Code` (CV, MI, XAI, EDGE, VLM), `Direction`, `Focus` |
-| Topics | research.html | a topic: `Code` (for example `MI-51`, never renumber), `Direction` (a code), `Status` (`Open` or `Taken`), titles, dataset, description, expectation |
+| Topics | research.html | a topic: `Code` (for example `MI-51`, never renumber), `Direction` (a code), `Status` (`Open` or `Taken`), titles, dataset, then one column per field: Context, Problem Formulation, Gap, Proposed Approach, Implementation Steps, Key Knowledge to Learn, Deliverables, Expected Results, Baselines, Metrics, Experimental Protocol, Minimum Success Criteria (empty cells are not shown) |
 | Conferences | research.html | a conference: `Directions` (codes or `All`), `CORE Rank`, `Submission Deadline`, `Held In` (English month names), `Hybrid`, `Website` |
 | Journals | research.html | a no-APC journal: `Rank` (Q1 to Q4), `Directions` (codes or `All`), `Link` |
 | Venue Notes | research.html | a note shown under the Conferences or Journals table |

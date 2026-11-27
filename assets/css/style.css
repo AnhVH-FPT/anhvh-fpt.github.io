@@ -32,6 +32,8 @@ p{margin-bottom:12px}
 .nav nav{display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
 .nav nav a{padding:6px 12px;border-radius:99px;color:var(--muted);text-decoration:none;font-size:.93rem;font-weight:500;white-space:nowrap}
 .nav nav a:hover{background:var(--soft);color:var(--brand)}
+.nav nav a.nav-cta{background:#1b4dff;color:#fff;font-weight:600;margin-left:6px}
+.nav nav a.nav-cta:hover{background:#133bd1;color:#fff}
 #theme{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:1rem;cursor:pointer}
 
 /* Hero */
