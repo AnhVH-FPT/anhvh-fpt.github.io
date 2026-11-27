@@ -141,9 +141,11 @@
 .vt .ink{color:var(--ink)}
 .rk{display:inline-block;min-width:30px;text-align:center;font-weight:700;font-size:.8rem;padding:2px 8px;border-radius:6px;color:var(--brand);background:var(--soft)}
 .rk.nr{font-weight:500;color:var(--muted);background:transparent;padding:0;text-align:left}
-.fee .fl{display:block;white-space:nowrap;color:var(--ink);line-height:1.7}
-.fee .fl small{display:inline;color:var(--muted);font-size:.78rem}
-.fee .fl em{font-style:normal;color:var(--muted);font-size:.8rem;display:inline-block;min-width:52px}
+
+.fee .fl{display:grid;grid-template-columns:84px auto;align-items:baseline;white-space:nowrap;line-height:1.75}
+.fee .fl em{font-style:normal;font-size:.8rem;color:var(--muted)}
+.fee .fl b{font-weight:500;font-size:.9rem;color:var(--ink)}
+.fee .fl b.free{color:var(--s-pub);font-weight:600}
 .vempty{padding:28px 16px;text-align:center}
 .vnotes{margin-top:18px;font-size:.88rem;color:var(--muted)}
 .vnotes summary{cursor:pointer;font-weight:600;color:var(--ink)}

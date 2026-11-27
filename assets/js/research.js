@@ -474,10 +474,10 @@
   };
   const feeHtml = t => !t ? '–' : t.split('\n').map(l => {
       const f = l.match(/^free\s*(\(.*\))?$/i);
-      if (f) return `<span class="fl"><span class="badge published">Free</span>${f[1] ? ` <small>${esc(f[1].slice(1, -1))}</small>` : ''}</span>`;
+      if (f) return `<span class="fl"><em>${f[1] ? 'Subscription' : 'Open access'}</em><b class="free">Free</b></span>`;
       const o = l.match(/^open access\s*:\s*(.*)$/i);
-      if (o) return `<span class="fl"><em>Open access</em> ${esc(o[1])}</span>`;
-      const m = l.match(/^(regular|student)\s*:\s*(.*)$/i); return m ? `<span class="fl"><em>${esc(m[1])}</em> ${esc(m[2])}</span>` : `<span class="fl">${esc(l)}</span>`; }).join('');
+      if (o) return `<span class="fl"><em>Open access</em><b>${esc(o[1])}</b></span>`;
+      const m = l.match(/^(regular|student)\s*:\s*(.*)$/i); return m ? `<span class="fl"><em>${esc(m[1])}</em><b>${esc(m[2])}</b></span>` : `<span class="fl">${esc(l)}</span>`; }).join('');
 
   const renderVenues = wb => {
     const dirsOf = s => ({ dirs: dirCodes(s), all: /^\s*(all\b.*)?$/i.test(s) });
