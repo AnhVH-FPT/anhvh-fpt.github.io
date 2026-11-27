@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/style.css?v=6">
-<link rel="stylesheet" href="assets/css/research.css?v=9">
+<link rel="stylesheet" href="assets/css/research.css?v=13">
 </head>
 <body>
 
@@ -83,18 +83,19 @@
 <!-- ================= VENUES ================= -->
 <section id="venues" class="alt"><div class="wrap">
   <h2>Where to publish</h2>
-  <p class="intro">Target venues for finished projects: Scopus-indexed annual conferences, sorted by submission deadline, and journals, preferring those you can publish in for free. Fees are approximate: check each website.</p>
-  <div class="seg" role="tablist" aria-label="Venue type"><button type="button" data-tab="conf" class="on">Conferences</button><button type="button" data-tab="jour">Journals</button></div>
-  <div id="venueFilter" class="dirs small" role="group" aria-label="Filter by rank"></div>
-  <div class="vfilters">
-    <label>Direction <select id="vdir"></select></label>
-    <label class="conf-only">Deadline <select id="vdl"></select></label>
-    <label class="conf-only">Held in <select id="vheld"></select></label>
-    <label class="jour-only" hidden>Time to publish <select id="vttp"><option value="any">Any time</option><option value="9">Up to 9 months</option><option value="12">Up to 12 months</option><option value="15">Up to 15 months</option><option value="over">Over 15 months</option></select></label>
-    <label>Sort <select id="vsort"></select></label>
-    <button type="button" class="mini" id="vreset">Reset filters</button>
-    <span class="vright"><span class="count" id="vcount" aria-live="polite"></span>
-    <label class="per">Show <select id="vper" aria-label="Venues per page"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>25</option></select> per page</label></span>
+  <p class="intro">Target venues for finished projects: Scopus-indexed annual conferences and journals, preferring those you can publish in for free. Search, filter, or click a column title to sort. Fees marked ≈ are approximate: check each website.</p>
+  <div class="vtop">
+    <div class="seg" role="tablist" aria-label="Venue type"><button type="button" data-tab="conf" class="on">Conferences <em id="vtabConf"></em></button><button type="button" data-tab="jour">Journals <em id="vtabJour"></em></button></div>
+    <label class="vsearch"><span class="sr">Search venues</span><input type="search" id="vq" autocomplete="off"></label>
+  </div>
+  <div class="vpanel">
+    <div class="vfields" id="vfields"></div>
+    <div class="vactive" id="vactive" aria-live="polite"></div>
+  </div>
+  <div class="vbar">
+    <span class="vcount" id="vcount" aria-live="polite"></span>
+    <span class="vright"><label class="per">Sort by <select id="vsort" aria-label="Sort venues"></select></label>
+    <label class="per">Show <select id="vper" aria-label="Venues per page"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>25</option></select></label></span>
   </div>
   <div id="venueBox" class="tablewrap"><p class="empty">Loading…</p></div>
   <nav class="pager" id="vpager" aria-label="Venue pages"></nav>
@@ -118,6 +119,6 @@
 <footer><div class="wrap">&copy; 2026 Ha Anh Vu. <a href="index.html">Back to the main page</a></div></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="assets/js/research.js?v=15"></script>
+<script src="assets/js/research.js?v=18"></script>
 </body>
 </html>

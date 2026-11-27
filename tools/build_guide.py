@@ -203,7 +203,6 @@ table([
     ('Submission Deadline', 'Không', 'Hạn nộp bài, ghi tên tháng bằng TIẾNG ANH (viết đầy đủ hoặc 3 chữ đầu như Jan, Feb). Được dùng cho bộ lọc Deadline và để sắp xếp. '
      'Có thể thêm Early / Mid / Late; khoảng thời gian dùng dấu gạch ngang; ghi chú để trong ngoặc đơn (web bỏ qua phần trong ngoặc).',
      'Mid January\nFebruary–March\nMid December – January\nJuly (round 1) / September (round 2)'),
-    ('Start Preparing', 'Không', 'Thời điểm nên bắt đầu làm để kịp hạn (hiện nguyên văn).', 'September (≈4 months before)'),
     ('Held In', 'Không', 'Tháng tổ chức hội nghị, cùng quy tắc ghi tháng như Submission Deadline. Dùng cho bộ lọc Held in.', 'October–November'),
     ('Presentation Format', 'Không', 'Hình thức trình bày (chỉ để tham khảo).', 'Hybrid – online/remote presentation accepted'),
     ('Hybrid', 'Không', 'Yes nếu cho phép trình bày online, No nếu bắt buộc đến trực tiếp.', 'Yes'),
