@@ -136,9 +136,9 @@
       <summary>
         <span class="tcode">${esc(t.code)}</span>
         <div class="thead">
-          <h3>${esc(t.en)}</h3>
-          ${t.vi ? `<p class="vi">${esc(t.vi)}</p>` : ''}
-          <p class="teaser">${esc((t.fields.Context || '').split('\n')[0])}</p>
+          <h3 class="clamp" title="${esc(t.en)}">${esc(t.en)}</h3>
+          ${t.vi ? `<p class="vi clamp">${esc(t.vi)}</p>` : '<p class="vi"></p>'}
+          <p class="teaser clamp">${esc((t.fields.Context || '').split('\n')[0])}</p>
           <div class="tmeta">
             <span class="tdir">${esc(t.dirName)}</span>
             ${closed ? `<span class="badge thesis">${esc(t.status)}</span>` : ''}
