@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Join my research group: Ha Anh Vu</title>
+<meta name="description" content="Open research topics for students in Ha Anh Vu's AI research group at FPT University: computer vision, medical imaging, explainable AI, edge AI and vision language models.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/research.css?v=2">
+</head>
+<body>
+
+<header class="nav"><div class="wrap nav-in">
+  <a class="brand" href="index.html">Ha Anh Vu</a>
+  <nav aria-label="Main">
+    <a href="index.html">&larr; Home</a>
+    <a href="#how">How to join</a>
+    <a href="#topics">Topics</a>
+    <a href="#venues">Where to publish</a>
+  </nav>
+  <button id="theme" type="button" aria-label="Toggle light or dark theme">&#9680;</button>
+</div></header>
+
+<main>
+<!-- ================= INTRO ================= -->
+<section class="rhero" id="how"><div class="wrap">
+  <p class="kicker">AI Research Group, FPT University</p>
+  <h1>Join my research group</h1>
+  <p class="lead">I am looking for motivated students who want to do real AI research. Students I mentor have had papers accepted at RIVF, IEEE ICARCV and EAI FISAT. Browse the open topics below, pick one that excites you, and send me an application.</p>
+
+  <ol class="steps">
+    <li><span>1</span><div><h3>Browse topics</h3><p>Filter by research direction or search by keyword, model or dataset.</p></div></li>
+    <li><span>2</span><div><h3>Read the details</h3><p>Each topic lists the problem, approach, datasets, expected results and what you will learn.</p></div></li>
+    <li><span>3</span><div><h3>Apply</h3><p>Click <strong>Apply for this topic</strong>. An email opens with the topic code filled in; attach your CV and transcript.</p></div></li>
+  </ol>
+
+  <div class="panel cols-panel">
+    <div class="cols">
+      <div><h3>What you will gain</h3>
+        <ul><li>Regular mentoring meetings</li>
+        <li>Guidance from idea to international conference paper</li>
+        <li>Hands-on experiments with modern deep learning</li>
+        <li>Co-authorship on publishable work</li></ul></div>
+      <div><h3>Requirements</h3>
+        <ul><li>Solid Python and basic PyTorch or TensorFlow</li>
+        <li>Foundations in linear algebra, probability and machine learning</li>
+        <li>About 3 to 4 months of steady work per topic</li></ul></div>
+      <div><h3>Your own idea?</h3>
+        <p>If none of the topics fit, email me your CV, transcript and a short note on the problem you want to work on.</p>
+        <a class="btn light" href="mailto:AnhVH54@fe.edu.vn?subject=%5BProspective%20Student%5D%20Your%20Name">Email me</a></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ================= TOPICS (rendered by assets/js/research.js from data/research.xlsx) ================= -->
+<section id="topics"><div class="wrap">
+  <h2>Research topics</h2>
+  <p class="intro">Every topic uses public datasets and is scoped for 3 to 4 months on a single RTX 4060/4090 GPU. Click a topic to see the full description.</p>
+
+  <div class="dirs" id="dirs" role="group" aria-label="Filter by research direction"></div>
+  <div class="tools">
+    <input id="q" type="search" placeholder="Search title, model, dataset…" aria-label="Search topics">
+    <label class="only" id="onlyWrap" hidden><input type="checkbox" id="only"> Open topics only</label>
+    <span class="count" id="count" aria-live="polite"></span>
+  </div>
+  <p class="dirfocus" id="dirfocus"></p>
+  <div id="list"><p class="empty">Loading…</p></div>
+</div></section>
+
+<!-- ================= VENUES ================= -->
+<section id="venues" class="alt"><div class="wrap">
+  <h2>Where to publish</h2>
+  <p class="intro">Target venues for finished projects: journals that charge no publication fee (APC) and Scopus-indexed annual conferences, sorted by submission deadline.</p>
+  <div class="seg" role="tablist" aria-label="Venue type"><button type="button" data-tab="conf" class="on">Conferences</button><button type="button" data-tab="jour">Free journals</button></div>
+  <div id="venueFilter" class="dirs small"></div>
+  <div id="venueBox" class="tablewrap"><p class="empty">Loading…</p></div>
+</div></section>
+</main>
+
+<footer><div class="wrap">&copy; 2026 Ha Anh Vu. <a href="index.html">Back to the main page</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="assets/js/research.js?v=2"></script>
+</body>
+</html>

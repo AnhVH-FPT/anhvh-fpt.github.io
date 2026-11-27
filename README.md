@@ -62,6 +62,20 @@ python3 -m http.server 8000   # then visit http://localhost:8000
 
 The Excel file is public once deployed, so do not put private information in it. The library that reads Excel (SheetJS 0.18.5) is loaded from cdnjs.
 
+## Research topics page (research.html)
+
+"Join my research group" (hero button, the "Join us" menu item and the Join section) opens `research.html` in a new tab. It reads `data/research.xlsx`:
+
+- **One sheet per research direction.** A sheet counts as a topic sheet when its header row contains `English Title`; title rows above the header are fine. Columns: `No.`, `Vietnamese Title`, `English Title`, `Dataset`, `Research Description`, `Research Expectation`. The direction name is taken from the first cell of the sheet (text before the dash). Topic codes are built from the direction and the `No.` column (for example `MI-01`), and `research.html#MI-01` opens that topic directly.
+- **Optional `Status` column.** Add it to mark topics as taken (`Taken`, `Assigned`, `Closed` or `Full`): the Apply button is hidden for them and an "Open topics only" filter appears.
+- **Overview sheet** (optional): the last text column of each direction row is shown as "Current trends".
+- **Free Journal List** (`Journal name`, `Publisher`, `Rank`, `Link`) and **Conferences** sheets feed the "Where to publish" section.
+- Inside descriptions, lines like `Gap: ...` become headings and `(1) ...` lines become numbered lists.
+
+To update topics, replace `data/research.xlsx` and push. After changing `assets/js/research.js` or `assets/css/research.css`, bump the `?v=` number in `research.html` so browsers fetch the new file.
+
+**Backup:** the site as it was before this page was added is kept in branch `backup/site-before-research-page` and tag `backup-2026-11-27`. To roll back: `git checkout main && git reset --hard backup-2026-11-27 && git push --force`.
+
 ## Troubleshooting: "Could not load data/database.xlsx"
 
 - Opened `index.html` by double-click? Browsers block this. Use `python3 -m http.server` (or VS Code Live Server), or view the deployed GitHub Pages site.
