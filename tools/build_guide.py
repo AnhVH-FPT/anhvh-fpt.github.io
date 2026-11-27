@@ -224,9 +224,11 @@ table([
      'Ghi "số–số months" (hoặc một số: "6 months"). Web dùng số LỚN để lọc (Up to 9 / 12 / 15 months, Over 15 months) và để sắp xếp khi chọn Sort: Fastest first. '
      'Để trống thì hiện "–" và xếp cuối. Các giá trị hiện có là ƯỚC LƯỢNG: nên đối chiếu với số liệu trên trang tạp chí (ví dụ mục Journal insights của Elsevier) và sửa lại khi cần.',
      '4–8 months'),
-    ('Publication Fee', 'Không', 'Phí đăng bài (APC). Ghi Free nếu tạp chí có cách đăng KHÔNG mất phí (đăng theo kiểu subscription/hybrid, hoặc diamond open access). '
-     'Nếu bắt buộc trả phí thì ghi số tiền kèm mã tiền tệ. Web sắp xếp "Lowest fee" theo cột này (Free lên đầu). Danh sách ưu tiên tạp chí Free.',
-     'Free   hoặc   USD 1,500'),
+    ('Publication Fee', 'Không', 'Các cách đăng bài, mỗi cách MỘT dòng (Alt+Enter để xuống dòng). Dòng "Free (subscription)": tạp chí hybrid, đăng miễn phí theo kiểu truyền thống. '
+     'Dòng "Open access: USD 3,270": phí APC nếu muốn bài mở cho mọi người đọc. Tạp chí có cả hai cách thì ghi cả hai dòng; tạp chí chỉ có cách trả phí thì chỉ ghi dòng Open access; '
+     'tạp chí diamond (không ai phải trả phí) thì chỉ ghi "Free". Ghi mã tiền tệ; ≈ = số ước lượng. Bộ lọc Publication fee: Free option available / Paid only / Open access up to ≈ USD 2,000 hoặc 3,000. '
+     'Sort: "Free first, then lowest APC" (diamond trước, rồi hybrid theo APC tăng dần, cuối cùng là tạp chí chỉ trả phí) và "Lowest open-access fee". Số APC lấy từ bảng giá 2026 của Elsevier, Springer Nature, Wiley, IEEE.',
+     'Free (subscription)\nOpen access: USD 3,270'),
 ])
 para('Sheet "Venue Notes": mỗi dòng là một ghi chú hiện trong mục "Notes" dưới bảng. Cột Applies To chọn Conferences, Journals hoặc All (hiện ở cả hai bảng); cột Note là nội dung ghi chú.')
 

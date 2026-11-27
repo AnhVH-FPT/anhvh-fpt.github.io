@@ -307,7 +307,7 @@
   // Multi-level sort: the latest choice comes first, earlier choices stay as 2nd and 3rd levels (e.g. Fee, then Rank)
   const SORT0 = { conf: [{ key: 'deadline', dir: 1 }], jour: [{ key: 'rank', dir: 1 }] };
   const SORT = { conf: [...SORT0.conf], jour: [...SORT0.jour] };
-  const SHORT = { deadline: 'Deadline', upcoming: 'Upcoming deadline', rank: 'Rank', fee: 'Fee', held: 'Held in', name: 'Name', ttp: 'Time to publish', publisher: 'Publisher' };
+  const SHORT = { deadline: 'Deadline', upcoming: 'Upcoming deadline', rank: 'Rank', fee: 'Fee', apc: 'Open-access fee', held: 'Held in', name: 'Name', ttp: 'Time to publish', publisher: 'Publisher' };
   const pushSort = (key, toggle) => {
     const list = SORT[tab], first = list[0];
     if (toggle && first.key === key) { list[0] = { key, dir: -first.dir }; return; }
@@ -320,7 +320,8 @@
       rank: ['Rank (best first)', x => rankKey(x.rank)], fee: ['Lowest fee first', x => x.feeReg],
       held: ['Held in (Jan → Dec)', x => x.held.length ? x.held[0] : Infinity], name: ['Name (A → Z)', x => x.name.toLowerCase()] },
     jour: { rank: ['Rank (Q1 first)', x => rankKey(x.rank)], ttp: ['Fastest to publish', x => x.ttpMax * 100 + x.ttpMin],
-      fee: ['Free first, then lowest fee', x => x.feeReg], name: ['Name (A → Z)', x => x.name.toLowerCase()],
+      fee: ['Free first, then lowest APC', x => x.diamond ? 0 : (x.free ? 1 : 1e7) + Math.min(x.apc, 1e6)],
+      apc: ['Lowest open-access fee (APC)', x => x.apc], name: ['Name (A → Z)', x => x.name.toLowerCase()],
       publisher: ['Publisher (A → Z)', x => (x.publisher || '').toLowerCase() || Infinity] },
   };
   const cmpVal = (x, y, d) => x === y ? 0 : x === Infinity ? 1 : y === Infinity ? -1 : (typeof x === 'string' ? x.localeCompare(y) : x - y) * d;
@@ -346,7 +347,9 @@
       ['dir', 'Direction', null, (x, v) => x.dirs.includes(v)],
       ['ttp', 'Time to publish', () => [['any', 'Any time'], ['9', 'Up to 9 months'], ['12', 'Up to 12 months'], ['15', 'Up to 15 months'], ['over', 'Over 15 months']],
         (x, v) => v === 'over' ? x.ttpMax > 15 && x.ttpMax < 999 : x.ttpMax <= +v],
-      ['fee', 'Publication fee', () => [['any', 'Any'], ['free', 'Free only'], ['paid', 'With a fee']], (x, v) => (x.feeReg === 0) === (v === 'free')],
+      ['fee', 'Publication fee', () => [['any', 'Any'], ['free', 'Free option available'], ['paid', 'Paid only (no free option)'],
+        ...[2000, 3000].map(n => [String(n), `Open access up to ≈ USD ${n.toLocaleString('en-US')}`])],
+        (x, v) => v === 'free' ? x.free : v === 'paid' ? !x.free : x.apc <= +v],
       ['pub', 'Publisher', null, (x, v) => x.pub === v],
     ],
   };
@@ -464,8 +467,17 @@
     const reg = lines.find(l => !/student/i.test(l)) || lines[0] || '', stu = lines.find(l => /student/i.test(l)) || '';
     return { feeText: lines.join('\n'), feeReg: reg ? usd(reg) : Infinity, feeStu: stu ? usd(stu) : Infinity };
   };
-  const feeHtml = t => !t ? '–' : /^free$/i.test(t) ? '<span class="badge published">Free</span>'
-    : t.split('\n').map(l => { const m = l.match(/^(regular|student)\s*:\s*(.*)$/i); return m ? `<span class="fl"><em>${esc(m[1])}</em> ${esc(m[2])}</span>` : `<span class="fl">${esc(l)}</span>`; }).join('');
+  // Journal fee: "Free (subscription)" / "Free" (no-fee route) and "Open access: USD 3,270" (APC), one per line
+  const jfeeOf = s => {
+    const lines = txt(s).split('\n').map(l => l.trim()).filter(Boolean), oaLine = lines.find(l => /open access/i.test(l)) || '';
+    return { feeText: lines.join('\n'), free: lines.some(l => /^free\b/i.test(l)), diamond: lines.length === 1 && /^free$/i.test(lines[0]), apc: oaLine ? usd(oaLine.replace(/^open access\s*:/i, '')) : Infinity };
+  };
+  const feeHtml = t => !t ? '–' : t.split('\n').map(l => {
+      const f = l.match(/^free\s*(\(.*\))?$/i);
+      if (f) return `<span class="fl"><span class="badge published">Free</span>${f[1] ? ` <small>${esc(f[1].slice(1, -1))}</small>` : ''}</span>`;
+      const o = l.match(/^open access\s*:\s*(.*)$/i);
+      if (o) return `<span class="fl"><em>Open access</em> ${esc(o[1])}</span>`;
+      const m = l.match(/^(regular|student)\s*:\s*(.*)$/i); return m ? `<span class="fl"><em>${esc(m[1])}</em> ${esc(m[2])}</span>` : `<span class="fl">${esc(l)}</span>`; }).join('');
 
   const renderVenues = wb => {
     const dirsOf = s => ({ dirs: dirCodes(s), all: /^\s*(all\b.*)?$/i.test(s) });
@@ -481,7 +493,7 @@
         hay: norm([pick(r, 'journal', 'journal name'), r.publisher].join(' ')),
         pub: txt(r.publisher).split('/')[0].trim(),   // main publisher, for the Publisher filter ("Springer / KOSOMBE" -> Springer)
         ttp: pick(r, 'time to publish'), ...(([a, b]) => ({ ttpMin: a, ttpMax: b }))(ttpOf(pick(r, 'time to publish'))),
-        ...feeOf(pick(r, 'publication fee', 'apc', 'fee')) }))
+        ...jfeeOf(pick(r, 'publication fee', 'apc', 'fee')) }))
       .filter(r => r.name && !/^notes?:?$/i.test(r.name) && !r.name.startsWith('•'));
     NOTES = findTable(wb, 'Venue Notes', h => h.includes('note') && h.includes('applies to')).filter(r => r.note).map(r => ({ to: r['applies to'] || 'All', note: r.note }));
 
