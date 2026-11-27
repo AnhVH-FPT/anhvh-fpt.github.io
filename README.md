@@ -70,14 +70,14 @@ The Excel file is public once deployed, so do not put private information in it.
 | Publications | index.html | a paper |
 | Projects | index.html | a supervised thesis |
 | Directions | research.html | a research direction: `Code` (CV, MI, XAI, EDGE, VLM), `Direction`, `Focus` |
-| Topics | research.html | a topic: `Code` (for example `MI-51`, never renumber), `Direction` (a code), `Status` (`Open` or `Taken`), titles, dataset, `Research Description` and `Research Expectation` written in a fixed template ("Context: ...", "Gap: ...", "Expected results:" then "(1) ..." lines; see section 6a of the Hướng dẫn sheet). Only template fields are shown, in a fixed order; lines outside the template are listed in the browser console |
+| Topics | research.html | a topic (its code, e.g. `MI-07`, is numbered by the site from the direction and the row order: add new topics at the end, mark taken ones `Taken` instead of deleting): `Direction` (a code), `Status` (`Open` or `Taken`), titles, dataset, `Research Description` and `Research Expectation` written in a fixed template ("Context: ...", "Gap: ...", "Expected results:" then "(1) ..." lines; see section 6a of the Hướng dẫn sheet). Only template fields are shown, in a fixed order; lines outside the template are listed in the browser console |
 | Conferences | research.html | a conference: `Directions` (codes or `All`), `CORE Rank`, `Submission Deadline`, `Held In` (English month names), `Hybrid`, `Website` |
 | Journals | research.html | a no-APC journal: `Rank` (Q1 to Q4), `Directions` (codes or `All`), `Link` |
 | Venue Notes | research.html | a note shown under the Conferences or Journals table |
 
 Rules: keep sheet names and the header row (row 1) as they are; column order does not matter. Conferences are sorted by deadline on the site, so their row order does not matter either. The Journals `Directions` column was first filled automatically from journal names, so review it.
 
-On the page, topics can be filtered by direction and searched; venues can be filtered by rank, direction, deadline month (including "Next 3 months") and the month the conference is held. Topics and venues are paged (5 to 25 per page). `research.html#MI-01` opens a topic directly.
+On the page, topics can be filtered by direction and searched; venues can be filtered by rank, direction, deadline month (including "Next 3 months") and the month the conference is held. Topics and venues are paged (5 to 25 per page). `research.html#MI-01` opens a topic directly. To regenerate the Hướng dẫn sheet after changing its texts, run `python tools/build_guide.py` (needs openpyxl). Project rules for AI assistants are in `CLAUDE.md`.
 
 After changing `assets/js/research.js` or `assets/css/research.css`, bump the `?v=` number in `research.html` so browsers fetch the new file.
 

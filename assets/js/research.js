@@ -192,15 +192,17 @@
         DIRS.push(d);
       }
       d.count++;
-      TOPICS.push({ i, code: r.code || `${d.code}-${String(i + 1).padStart(2, '0')}`, dir: d.code, dirName: d.name,
+      // The code is not stored in Excel: it is the direction code + the topic's position among that direction's rows
+      // (first row of MI = MI-01). Deleting or moving a row therefore renumbers the topics after it.
+      TOPICS.push({ i, code: `${d.code}-${String(d.count).padStart(2, '0')}`, dir: d.code, dirName: d.name,
         en: r['english title'], vi: r['vietnamese title'], dataset: r.dataset, status: r.status,
         desc: r['research description'], expect: r['research expectation'] });
     });
     DIRS = DIRS.filter(d => d.count);
     if (wantDir && dirByCode(wantDir)) dir = dirByCode(wantDir).code;
-    // Order: directions as in the Directions sheet, then by topic code number (MI-2 before MI-10), whatever the row order
+    // Order: directions as in the Directions sheet, then row order in the Topics sheet (= code number)
     const rank = new Map(DIRS.map((d, i) => [d.code, i]));
-    TOPICS.sort((a, b) => rank.get(a.dir) - rank.get(b.dir) || a.code.localeCompare(b.code, undefined, { numeric: true }) || a.i - b.i);
+    TOPICS.sort((a, b) => rank.get(a.dir) - rank.get(b.dir) || a.i - b.i);
     TOPICS.forEach(x => {
       const d = parseFields(x.desc, DESC_FIELDS), e = parseFields(x.expect, EXP_FIELDS);
       x.fields = { ...d.out, ...e.out };
