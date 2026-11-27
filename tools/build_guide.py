@@ -242,6 +242,17 @@ para('• Hội nghị không hiện khi lọc theo tháng: cột Submission Dea
 para('• Mở file index.html bằng cách nhấp đúp sẽ không đọc được file Excel (trình duyệt chặn). Hãy xem trên website thật, hoặc chạy "python -m http.server" trong thư mục website rồi mở http://localhost:8000.')
 
 ws.freeze_panes = 'A2'
+
+# Excel saves the Topics "Direction" dropdown (a list taken from another sheet) in an extension openpyxl cannot
+# read, so loading drops it. Put it back so the dropdown survives every run of this script.
+from openpyxl.worksheet.datavalidation import DataValidation
+tw = wb['Topics']
+if not any('A2' in str(dv.sqref) for dv in tw.data_validations.dataValidation):
+    msg = 'Direction code from the Directions sheet (CV, MI, XAI, EDGE, VLM, ...)'
+    dv = DataValidation(type='list', formula1='=Directions!$A$2:$A$50', allow_blank=True, showErrorMessage=True, showInputMessage=True,
+                        errorTitle='Invalid value', error=msg, promptTitle='Choose', prompt=msg)
+    dv.add('A2:A2000')
+    tw.add_data_validation(dv)
 order = ['Hướng dẫn', 'Publications', 'Projects', 'Directions', 'Topics', 'Conferences', 'Journals', 'Venue Notes']
 wb._sheets = [wb[n] for n in order] + [s for s in wb._sheets if s.title not in order]
 wb.active = 0
