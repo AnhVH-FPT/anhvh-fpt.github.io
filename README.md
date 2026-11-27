@@ -48,7 +48,7 @@ python3 -m http.server 8000   # then visit http://localhost:8000
 
 ## Update publications and projects (Excel)
 
-1. Open `data/database.xlsx`. The `Instructions` sheet explains every column.
+1. Open `data/database.xlsx`. The first sheet, `Hướng dẫn`, explains every column (in Vietnamese).
 2. **Projects sheet** (undergraduate thesis projects): `Semester` (for example `Fall 2026`; `FA26` also works), `Title`, `Members` (separated by `;`), `Thesis Status`, `Paper Status`, `Paper Venue`, `Link ID`.
    - `Thesis Status`: **Preparing** (topic just chosen), **In progress** (work ongoing), **Defended** (finished).
    - `Paper Status`: **None** (no badge), **Submitted** (badge "Paper submitted"), **Accepted** (badge "Accepted, see C1").
@@ -63,7 +63,7 @@ The Excel file is public once deployed, so do not put private information in it.
 
 ## Research topics page (research.html)
 
-"Join my research group" (hero button, the "Join us" menu item and the Join section) opens `research.html`. It reads the same workbook as the main page, `data/database.xlsx`, so **the whole site has one database**. Edit the workbook in Excel, save, commit and push (GitHub Desktop): the site shows the change after GitHub Pages redeploys (1 to 2 minutes). No code changes are needed. The workbook's **Instructions** sheet explains every sheet in detail.
+"Join my research group" (hero button, the "Join us" menu item and the Join section) opens `research.html`. It reads the same workbook as the main page, `data/database.xlsx`, so **the whole site has one database**. Edit the workbook in Excel, save, commit and push (GitHub Desktop): the site shows the change after GitHub Pages redeploys (1 to 2 minutes). No code changes are needed. The workbook's first sheet, **Hướng dẫn**, explains every sheet in detail (in Vietnamese), including how the site sorts each list.
 
 | Sheet | Used by | One row is |
 |---|---|---|

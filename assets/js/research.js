@@ -36,7 +36,14 @@
       return new Proxy(o, { get: (t, k) => (k in t ? t[k] : '') });
     });
   };
-  const findTable = (wb, test) => { for (const n of wb.SheetNames) { const t = table(wb.Sheets[n], test); if (t) return t; } return []; };
+  // The sheet with this name if it exists, otherwise the first sheet whose header passes the test.
+  // The instructions sheet is never read as data (its example tables use the same column names).
+  const findTable = (wb, name, test) => {
+    const named = wb.SheetNames.find(n => n.trim().toLowerCase() === name.toLowerCase());
+    const others = wb.SheetNames.filter(n => n !== named && !/instruction|hướng dẫn|huong dan/i.test(n));
+    for (const n of named ? [named, ...others] : others) { const t = table(wb.Sheets[n], test); if (t) return t; }
+    return [];
+  };
   const pick = (r, ...keys) => { for (const k of keys) if (r[k]) return r[k]; return ''; };
 
   // "• Name\nhttps://..." -> [{name, url}]
@@ -158,10 +165,10 @@
   };
 
   const renderTopics = wb => {
-    DIRS = findTable(wb, h => h.includes('code') && h.includes('direction') && !h.includes('english title'))
+    DIRS = findTable(wb, 'Directions', h => h.includes('code') && h.includes('direction') && !h.includes('english title'))
       .filter(r => r.code && r.direction)
       .map(r => ({ code: r.code, name: r.direction, focus: pick(r, 'focus (current research trends)', 'focus'), count: 0 }));
-    const rows = findTable(wb, h => h.includes('english title')).filter(r => r['english title']);
+    const rows = findTable(wb, 'Topics', h => h.includes('english title')).filter(r => r['english title']);
     rows.forEach((r, i) => {
       let d = dirByCode(r.direction) || DIRS.find(x => x.name.toLowerCase() === r.direction.toLowerCase());
       if (!d) {                                                     // a direction code missing from the Directions sheet
@@ -174,8 +181,9 @@
         desc: r['research description'], expect: r['research expectation'] });
     });
     DIRS = DIRS.filter(d => d.count);
+    // Order: directions as in the Directions sheet, then by topic code number (MI-2 before MI-10), whatever the row order
     const rank = new Map(DIRS.map((d, i) => [d.code, i]));
-    TOPICS.sort((a, b) => rank.get(a.dir) - rank.get(b.dir) || a.i - b.i);  // directions in sheet order, then row order
+    TOPICS.sort((a, b) => rank.get(a.dir) - rank.get(b.dir) || a.code.localeCompare(b.code, undefined, { numeric: true }) || a.i - b.i);
     TOPICS.forEach(x => { x.hay = norm([x.code, x.en, x.vi, x.dataset, x.desc, x.expect].join(' ')); });
     $('#onlyWrap').hidden = !TOPICS.some(isClosed);
     $('#dirs').innerHTML = `<button type="button" data-dir="all">All directions <em>${TOPICS.length}</em></button>` +
@@ -283,19 +291,26 @@
 
   const renderVenues = wb => {
     const dirsOf = s => ({ dirs: dirCodes(s), all: /^\s*(all\b.*)?$/i.test(s) });
-    CONF = findTable(wb, h => h.includes('conference') && h.includes('website')).filter(r => r.conference).map((r, i) => {
+    CONF = findTable(wb, 'Conferences', h => h.includes('conference') && h.includes('website')).filter(r => r.conference).map((r, i) => {
       const deadline = pick(r, 'submission deadline', 'typical submission deadline'), heldText = pick(r, 'held in', 'typical conference month');
       return { i, name: r.conference, full: r['full name'], rank: r['core rank'], deadline, heldText, hybrid: r.hybrid, website: r.website,
         prep: pick(r, 'start preparing', 'suggested start of preparation'), dl: monthsOf(deadline), held: monthsOf(heldText),
         ...dirsOf(pick(r, 'directions', 'research directions')) };
     });
-    // Sorted by deadline (January first) so the sheet can be kept in any order
-    const firstDl = x => x.dl.length ? Math.min(...x.dl) : 99;
-    CONF.sort((a, b) => firstDl(a) - firstDl(b) || a.i - b.i);
-    JOUR = findTable(wb, h => h.some(x => /^journal( name)?$/.test(x)) && h.includes('rank'))
-      .map(r => ({ name: pick(r, 'journal', 'journal name'), publisher: r.publisher, rank: r.rank, link: r.link, ...dirsOf(r.directions) }))
-      .filter(r => r.name && !/^notes?:?$/i.test(r.name) && !r.name.startsWith('•'));
-    NOTES = findTable(wb, h => h.includes('note') && h.includes('applies to')).filter(r => r.note).map(r => ({ to: r['applies to'] || 'All', note: r.note }));
+    // Sorting is done here, so rows can be typed into the sheets in any order.
+    // Conferences: deadline month (January first; "Mid December – January" counts as December),
+    // then early / mid / late in that month, then rank (A* first), then name.
+    const RANK_ORDER = { 'A*': 0, A: 1, B: 2, C: 3, Q1: 0, Q2: 1, Q3: 2, Q4: 3 };
+    const rankKey = r => r in RANK_ORDER ? RANK_ORDER[r] : 9;
+    const dlKey = x => x.dl.length ? x.dl[0] * 10 + (/^\s*early/i.test(x.deadline) ? 0 : /^\s*late/i.test(x.deadline) ? 2 : 1) : 999;
+    const byName = (a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    CONF.sort((a, b) => dlKey(a) - dlKey(b) || rankKey(a.rank) - rankKey(b.rank) || byName(a, b));
+    // Journals: Q1, Q2, Q3, Q4 (unranked last), then A to Z
+    JOUR = findTable(wb, 'Journals', h => h.some(x => /^journal( name)?$/.test(x)) && h.includes('rank'))
+      .map(r => ({ name: pick(r, 'journal', 'journal name'), publisher: r.publisher, rank: r.rank.toUpperCase(), link: r.link, ...dirsOf(r.directions) }))
+      .filter(r => r.name && !/^notes?:?$/i.test(r.name) && !r.name.startsWith('•'))
+      .sort((a, b) => rankKey(a.rank) - rankKey(b.rank) || byName(a, b));
+    NOTES = findTable(wb, 'Venue Notes', h => h.includes('note') && h.includes('applies to')).filter(r => r.note).map(r => ({ to: r['applies to'] || 'All', note: r.note }));
 
     if (!CONF.length && !JOUR.length) { $('#venues').hidden = true; $('a[href="#venues"]').hidden = true; return; }
     if (!CONF.length) tab = 'jour';
