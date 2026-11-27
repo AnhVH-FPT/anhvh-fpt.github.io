@@ -304,7 +304,15 @@
     jour: { q: '', rank: 'all', dir: 'all', ttp: 'any', fee: 'any', pub: 'all' },
   };
   const F = { conf: { ...DEF.conf }, jour: { ...DEF.jour } };
-  const SORT = { conf: { key: 'deadline', dir: 1 }, jour: { key: 'rank', dir: 1 } };
+  // Multi-level sort: the latest choice comes first, earlier choices stay as 2nd and 3rd levels (e.g. Fee, then Rank)
+  const SORT0 = { conf: [{ key: 'deadline', dir: 1 }], jour: [{ key: 'rank', dir: 1 }] };
+  const SORT = { conf: [...SORT0.conf], jour: [...SORT0.jour] };
+  const SHORT = { deadline: 'Deadline', upcoming: 'Upcoming deadline', rank: 'Rank', fee: 'Fee', held: 'Held in', name: 'Name', ttp: 'Time to publish', publisher: 'Publisher' };
+  const pushSort = (key, toggle) => {
+    const list = SORT[tab], first = list[0];
+    if (toggle && first.key === key) { list[0] = { key, dir: -first.dir }; return; }
+    SORT[tab] = [{ key, dir: 1 }, ...list.filter(s => s.key !== key)].slice(0, 3);
+  };
 
   // Sort keys: a value per row (number or text); Infinity = unknown, always listed last
   const SORTS = {
@@ -317,9 +325,8 @@
   };
   const cmpVal = (x, y, d) => x === y ? 0 : x === Infinity ? 1 : y === Infinity ? -1 : (typeof x === 'string' ? x.localeCompare(y) : x - y) * d;
   const sorted = rows => {
-    const { key, dir } = SORT[tab], k = SORTS[tab][key][1];
     const tie = tab === 'conf' ? [dlKey, x => rankKey(x.rank)] : [x => rankKey(x.rank)];
-    return rows.slice().sort((a, b) => cmpVal(k(a), k(b), dir) || tie.reduce((r, f) => r || cmpVal(f(a), f(b), 1), 0)
+    return rows.slice().sort((a, b) => SORT[tab].reduce((r, { key, dir }) => r || cmpVal(SORTS[tab][key][1](a), SORTS[tab][key][1](b), dir), 0) || tie.reduce((r, f) => r || cmpVal(f(a), f(b), 1), 0)
       || a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
   };
 
@@ -395,7 +402,10 @@
     $('#vactive').innerHTML = act.length ? act.join('') + '<button type="button" class="linkbtn" id="vclear">Clear all</button>' : '';
     // sort select
     $('#vsort').innerHTML = Object.entries(SORTS[tab]).map(([k, [l]]) => `<option value="${k}">${l}</option>`).join('');
-    $('#vsort').value = SORT[tab].key;
+    $('#vsort').value = SORT[tab][0].key;
+    const lvl = SORT[tab];
+    $('#vsortinfo').innerHTML = lvl.length > 1 ? 'Sorted by ' + lvl.map((s, i) => `${i ? 'then ' : ''}<b>${SHORT[s.key]}</b> ${s.dir > 0 ? '↑' : '↓'}`).join(', ')
+      + ' <button type="button" class="linkbtn" id="vsortreset">Reset sort</button>' : '';
 
     const all = sorted(data.filter(x => passes(x)));
     const pages = Math.max(1, Math.ceil(all.length / vper));
@@ -410,8 +420,9 @@
     const dirTags = x => x.all ? '<span class="dtag">All directions</span>' : x.dirs.map(c => `<span class="dtag" title="${esc((dirByCode(c) || {}).name)}">${esc(c)}</span>`).join(' ');
     const th = (label, key) => {
       if (!key) return `<th>${label}</th>`;
-      const on = SORT[tab].key === key, d = SORT[tab].dir;
-      return `<th aria-sort="${on ? (d > 0 ? 'ascending' : 'descending') : 'none'}"><button type="button" class="sortbtn${on ? ' on' : ''}" data-sort="${key}">${label}<i aria-hidden="true">${on ? (d > 0 ? '↑' : '↓') : '↕'}</i></button></th>`;
+      const i = SORT[tab].findIndex(s => s.key === key), on = i >= 0, d = on ? SORT[tab][i].dir : 1;
+      const mark = on ? (d > 0 ? '↑' : '↓') + (SORT[tab].length > 1 ? `<sup>${i + 1}</sup>` : '') : '↕';
+      return `<th aria-sort="${i === 0 ? (d > 0 ? 'ascending' : 'descending') : 'none'}"><button type="button" class="sortbtn${i === 0 ? ' on' : on ? ' on2' : ''}" data-sort="${key}" title="Sort by this column (keeps the previous order as a tie-breaker)">${label}<i aria-hidden="true">${mark}</i></button></th>`;
     };
     const rankBadge = x => tab === 'jour' ? `<span class="q q${esc(x.rank).slice(1)}">${esc(x.rank) || '–'}</span>`
       : `<span class="rk${/^[A-C]/.test(rankOf(x)) ? '' : ' nr'}">${esc(rankOf(x))}</span>`;
@@ -489,9 +500,10 @@
     if (pill) { const k = pill.dataset.k; F[tab][k] = DEF[tab][k]; if (k === 'q') $('#vq').value = ''; vpage = 1; drawVenues(); return; }
     if (e.target.closest('#vclear, #vclear2')) { resetAll(); return; }
     const sb = e.target.closest('.sortbtn');
-    if (sb) { const s = SORT[tab]; s.dir = s.key === sb.dataset.sort ? -s.dir : 1; s.key = sb.dataset.sort; vpage = 1; drawVenues(); }
+    if (sb) { pushSort(sb.dataset.sort, true); vpage = 1; drawVenues(); return; }
+    if (e.target.closest('#vsortreset')) { SORT[tab] = [...SORT0[tab]]; vpage = 1; drawVenues(); }
   });
-  $('#vsort').addEventListener('change', e => { SORT[tab] = { key: e.target.value, dir: 1 }; vpage = 1; drawVenues(); });
+  $('#vsort').addEventListener('change', e => { pushSort(e.target.value, false); vpage = 1; drawVenues(); });
   $('#vper').addEventListener('change', () => { vper = +$('#vper').value; store.set('vper', vper); vpage = 1; drawVenues(); });
   $('#vpager').addEventListener('click', e => {
     const b = e.target.closest('button[data-p]'); if (!b || b.disabled) return;

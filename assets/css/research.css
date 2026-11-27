@@ -121,6 +121,11 @@
 .vbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin:16px 0 10px}
 .vcount{font-size:.9rem;color:var(--muted)}
 .vcount b{color:var(--ink);font-weight:600}
+.vsortinfo{display:block;font-size:.82rem;margin-top:2px}
+.vsortinfo:empty{display:none}
+.vsortinfo b{color:var(--brand)}
+.sortbtn.on2,.sortbtn.on2 i{color:color-mix(in srgb,var(--brand) 65%,var(--muted))}
+.sortbtn sup{font-size:.62rem;margin-left:1px}
 .vright{margin-left:auto;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
 /* Venue table */
 .vt th{padding:0}
