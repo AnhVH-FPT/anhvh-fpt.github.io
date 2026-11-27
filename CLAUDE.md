@@ -72,6 +72,7 @@ Editing the workbook from code: use openpyxl, keep data validations (Direction, 
 ## Verify before reporting done
 
 1. Serve the folder: `python -m http.server 8765` (or the `site` entry in `.claude/launch.json`) and open `http://localhost:8765/index.html` and `/research.html`. Opening the HTML by double-click cannot read the workbook.
+   Serve the folder that holds the file you want to see. The owner edits `E:\Coding\Resume\data\database.xlsx`; a server started inside a worktree shows the worktree's copy, not those edits. To preview the owner's edits: `python -m http.server 8766 --directory E:/Coding/Resume` (the `site-main` entry).
 2. Check in the page: 249-ish topics load, direction chips and counts, a topic opens with all template fields, venue filters and paging, Publications and Projects still render on index.html, no console errors.
 3. If you changed the workbook, also check it opens with the expected sheet list and only one guide sheet.
 
