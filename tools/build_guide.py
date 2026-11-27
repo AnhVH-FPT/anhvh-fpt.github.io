@@ -82,6 +82,18 @@ title('HƯỚNG DẪN SỬ DỤNG FILE DATABASE CỦA WEBSITE')
 para('File này (data/database.xlsx) là "cơ sở dữ liệu" của cả website. Trang chủ (index.html) và trang tuyển sinh viên nghiên cứu (research.html) đều đọc trực tiếp từ file này mỗi khi có người mở web. '
      'Bạn KHÔNG cần sửa code: chỉ cần sửa file Excel, lưu lại và đẩy lên GitHub.')
 
+para('Tổng quan các sheet (chi tiết từng cột ở các mục bên dưới):', bold=True)
+table([
+    ('Publications', 'Trang chủ', 'Danh sách bài báo, mục Publications (xem mục 3).', '13 bài'),
+    ('Projects', 'Trang chủ', 'Đề tài luận văn đang hướng dẫn, mục Undergraduate thesis projects (mục 4).', 'Fall 2026 ...'),
+    ('Directions', 'Cả hai trang', 'Các hướng nghiên cứu: thẻ Research interests ở trang chủ và nút lọc đề tài ở research.html (mục 5).', 'CV, MI, XAI, EDGE, VLM'),
+    ('Topics', 'research.html', 'Đề tài cho sinh viên, mục Research topics (mục 6 và 6a).', 'khoảng 250 đề tài'),
+    ('Conferences', 'research.html', 'Hội nghị có kỷ yếu Scopus, tab Conferences của mục Where to publish (mục 7).', 'khoảng 200 hội nghị'),
+    ('Journals', 'research.html', 'Tạp chí, tab Journals của mục Where to publish (mục 8).', 'khoảng 200 tạp chí'),
+    ('Venue Notes', 'research.html', 'Ghi chú hiện dưới bảng hội nghị/tạp chí (mục 8).', ''),
+])
+para('Cột thứ hai ở bảng trên là trang web dùng sheet đó; cột cuối là quy mô hiện tại.', italic=True)
+
 section('1. CÁC BƯỚC CẬP NHẬT WEBSITE')
 para('Bước 1. Mở file E:\\Coding\\Resume\\data\\database.xlsx bằng Excel (đúng file nằm trong thư mục website, không phải bản sao ở nơi khác).')
 para('Bước 2. Thêm, sửa hoặc xóa dòng trong sheet cần thay đổi (xem hướng dẫn từng sheet bên dưới).')
@@ -131,8 +143,8 @@ table([
     ('Direction', 'Có', 'Tên hướng hiển thị trên nút lọc của web. Có thể đổi tên thoải mái.', 'Medical Imaging'),
     ('Focus (current research trends)', 'Không', 'Các xu hướng chính, hiện thành dòng "Current trends" khi sinh viên chọn hướng này.', 'Medical SAM/foundation models, nnU-Net ...'),
     ('Summary', 'Không', 'Một câu mô tả ngắn (khoảng 10 từ, tiếng Anh) hiện trên thẻ hướng nghiên cứu ở mục Research interests của trang chủ. Mỗi thẻ bấm vào sẽ mở trang research.html lọc sẵn hướng đó, kèm số đề tài còn Open.', 'Deep learning for diagnosis and segmentation of medical scans.'),
-    ('Topics', 'Tự động', 'Công thức Excel tự đếm số đề tài của hướng. Không cần sửa; khi thêm hướng mới thì copy công thức từ dòng trên xuống.', '=COUNTIF(Topics!$A:$A,A3)'),
 ])
+para('Số đề tài của mỗi hướng (chỉ tính đề tài Open) do web tự đếm từ sheet Topics, không cần nhập.', italic=True)
 para('Thêm một hướng mới: thêm một dòng ở sheet này (ví dụ Code = NLP, Direction = Natural Language Processing), sau đó dùng mã NLP trong cột Direction của sheet Topics. '
      'Thứ tự các dòng trong sheet này chính là thứ tự các thẻ Research interests ở trang chủ, các nút lọc và các nhóm đề tài trên web.')
 
@@ -144,7 +156,7 @@ table([
     ('English Title', 'Có', 'Tên đề tài tiếng Anh (tiêu đề chính). Dòng không có cột này sẽ bị bỏ qua.', 'Parameter-Efficient Adaptation of Medical SAM ...'),
     ('Dataset', 'Không', 'Mỗi bộ dữ liệu gồm 2 dòng trong cùng ô (Alt + Enter để xuống dòng): dòng 1 là "• Tên", dòng 2 là link. 3 bộ đầu tiên hiện thành nhãn nhỏ trên thẻ đề tài.',
      '• Kvasir-SEG\nhttps://datasets.simula.no/kvasir-seg/\n• CVC-ClinicDB\nhttps://polyp.grand-challenge.org/...'),
-    ('Research Description', 'Có', 'Mô tả đề tài, PHẢI nhập theo mẫu ở mục 6a bên dưới. Gồm 6 mục, mỗi mục bắt đầu bằng đúng tên mục và dấu hai chấm ở đầu dòng. Mục Context cũng là câu tóm tắt hiện trên thẻ đề tài khi chưa mở ra.',
+    ('Research Description', 'Có', 'Mô tả đề tài, PHẢI nhập theo mẫu ở mục 6a bên dưới. Gồm 6 mục, mỗi mục bắt đầu bằng đúng tên mục và dấu hai chấm ở đầu dòng. Mục Context cũng là đoạn tóm tắt hiện trên thẻ đề tài khi chưa mở ra (thẻ chỉ hiện 3 dòng đầu, 4 dòng trên điện thoại; bấm mở thẻ sẽ thấy đầy đủ).',
      'Context: Organ delineation on CT is required ...\nProblem formulation: Input: a 3D CT volume. Output: organ masks.\nGap: ...\nProposed approach: ...\nImplementation steps:\n(1) ...\n(2) ...\nKey knowledge to learn: ...'),
     ('Research Expectation', 'Có', 'Kết quả mong đợi, PHẢI nhập theo mẫu ở mục 6a bên dưới. Gồm 6 mục, cùng quy tắc như Research Description.',
      'Deliverables: ...\nExpected results:\n(1) ...\n(2) ...\nBaselines: ...\nMetrics: ...\nExperimental protocol: ...\nMinimum success criteria: ...'),
@@ -161,7 +173,7 @@ para('Web chỉ hiện những mục viết ĐÚNG mẫu dưới đây. Cách nh
      'Mẹo: copy nguyên khung mẫu dưới đây vào ô rồi điền nội dung sau dấu hai chấm. Rê chuột lên ô tiêu đề cột trong sheet Topics cũng thấy nhắc lại mẫu.')
 table([
     ('Research Description', 'Thứ tự', 'Tên mục phải gõ đúng (không phân biệt hoa thường)', 'Nội dung nên ghi'),
-    ('', '1', 'Context:', 'Bối cảnh, vì sao bài toán quan trọng (1–2 câu ngắn, dùng làm câu tóm tắt trên thẻ).'),
+    ('', '1', 'Context:', 'Tóm tắt đề tài cho sinh viên, ÍT NHẤT 3 câu tiếng Anh (khoảng 55–80 từ): (1) bối cảnh, vì sao bài toán quan trọng; (2) khó khăn hoặc hạn chế hiện nay; (3) sinh viên sẽ làm gì, trên bộ dữ liệu nào.'),
     ('', '2', 'Problem formulation:', 'Đầu vào và đầu ra của bài toán.'),
     ('', '3', 'Gap:', 'Hạn chế của các phương pháp hiện tại.'),
     ('', '4', 'Proposed approach:', 'Hướng tiếp cận đề xuất.'),
@@ -183,7 +195,7 @@ para('• Chữ nằm ngoài các mục trên (ví dụ dòng đầu không có 
 para('• Trong nội dung một mục vẫn được dùng dấu hai chấm (ví dụ "Problem formulation: Input: ... Output: ..."), vì chỉ 12 tên mục ở trên mới được hiểu là tên mục.')
 para('• Một mục có thể dài nhiều dòng: các dòng tiếp theo (không bắt đầu bằng tên mục) thuộc về mục phía trên.')
 para('Ví dụ một ô Research Description hoàn chỉnh:', bold=True)
-para('Context: Organ delineation on CT is required for radiotherapy planning and volumetry.\n'
+para('Context: Outlining abdominal organs on CT scans is needed for radiotherapy planning, but doing it by hand takes hours. Medical SAM models still need a manual box prompt on every slice. You will adapt SAM/MedSAM with LoRA and segment many organs at once on TotalSegmentator.\n'
      'Problem formulation: Input: a 3D abdominal CT volume. Output: voxel-wise masks for multiple organs.\n'
      'Gap: MedSAM requires manual box prompts per slice; nnU-Net needs full training per task.\n'
      'Proposed approach: Adapt SAM/MedSAM with LoRA and an automatic prompt generator.\n'
@@ -198,18 +210,17 @@ table([
     ('Conference', 'Có', 'Tên viết tắt của hội nghị (hiện in đậm, bấm vào mở website hội nghị).', 'MICCAI'),
     ('Full Name', 'Không', 'Tên đầy đủ.', 'Medical Image Computing and Computer Assisted Intervention'),
     ('Directions', 'Không', 'Các mã hướng phù hợp, cách nhau bằng dấu phẩy; hoặc All nếu hợp mọi hướng. Để trống cũng tính là All. Dùng cho bộ lọc Direction.', 'MI, XAI   hoặc   All'),
-    ('CORE Rank', 'Không', 'Chọn A*, A, B, C hoặc Not ranked. Để trống sẽ hiện là Not ranked.', 'A'),
-    ('Proceedings', 'Không', 'Nơi xuất bản kỷ yếu (chỉ để bạn tham khảo, web không hiện cột này).', 'Springer LNCS – Scopus'),
+    ('CORE Rank', 'Không', 'Chọn A*, A, B, C hoặc Not ranked theo bảng xếp hạng CORE mới nhất (ICORE2026, portal.core.edu.au). Not ranked = CORE không xếp hạng A*–C (kể cả hội nghị chỉ có hạng quốc gia). Để trống sẽ hiện là Not ranked. Dùng cho bộ lọc Rank.', 'A'),
+    ('Proceedings', 'Không', 'Nơi xuất bản kỷ yếu, phải được Scopus index. Web không hiện cột này nhưng dùng nó cho ô tìm kiếm.', 'Springer LNCS – Scopus'),
     ('Submission Deadline', 'Không', 'Hạn nộp bài, ghi tên tháng bằng TIẾNG ANH (viết đầy đủ hoặc 3 chữ đầu như Jan, Feb). Được dùng cho bộ lọc Deadline và để sắp xếp. '
      'Có thể thêm Early / Mid / Late; khoảng thời gian dùng dấu gạch ngang; ghi chú để trong ngoặc đơn (web bỏ qua phần trong ngoặc).',
      'Mid January\nFebruary–March\nMid December – January\nJuly (round 1) / September (round 2)'),
     ('Held In', 'Không', 'Tháng tổ chức hội nghị, cùng quy tắc ghi tháng như Submission Deadline. Dùng cho bộ lọc Held in.', 'October–November'),
-    ('Presentation Format', 'Không', 'Hình thức trình bày (chỉ để tham khảo).', 'Hybrid – online/remote presentation accepted'),
-    ('Hybrid', 'Không', 'Yes nếu cho phép trình bày online, No nếu bắt buộc đến trực tiếp.', 'Yes'),
-    ('Website', 'Không', 'Link trang chủ hội nghị.', 'https://conferences.miccai.org/'),
+    ('Hybrid', 'Không', 'Chọn Yes hoặc No trong danh sách thả xuống. Yes = cho phép trình bày online; No = bắt buộc đến trình bày trực tiếp. Web hiện cột Hybrid (Yes/No) và có bộ lọc Hybrid.', 'Yes'),
+    ('Website', 'Không', 'Link trang chủ hội nghị. Nếu hội nghị chỉ có trang riêng cho từng năm (dễ hết hạn), có thể dùng trang dblp của hội nghị, vì trang này liệt kê mọi kỳ và không đổi link.', 'https://conferences.miccai.org/'),
     ('Registration Fee', 'Không', 'Phí đăng ký cho mỗi bài, mỗi mức ghi MỘT dòng (Alt+Enter để xuống dòng trong ô): dòng "Regular: ..." và dòng "Student: ...". '
-     'Hội nghị chỉ có một mức thì ghi một dòng Regular. Luôn ghi mã tiền tệ (USD, EUR, GBP, AUD, JPY, VND...). Dấu ≈ nghĩa là số gần đúng lấy từ kỳ gần đây: '
-     'phí đổi hằng năm, nên kiểm tra lại trên website. Web sắp xếp "Lowest fee" theo dòng Regular (quy đổi gần đúng sang USD), rồi dòng Student.',
+     'Hội nghị chỉ có một mức thì ghi một dòng Regular. Luôn ghi mã tiền tệ (USD, EUR, GBP, AUD, JPY, VND...). Số KHÔNG có dấu ≈ là số đọc từ trang đăng ký của kỳ gần nhất (giá đăng ký sớm, thường là giá hội viên); số CÓ dấu ≈ là ước lượng. '
+     'Phí đổi hằng năm, nên kiểm tra lại trên website. Web sắp xếp "Lowest fee" theo dòng Regular (quy đổi gần đúng sang USD), rồi dòng Student.',
      'Regular: ≈USD 900\nStudent: ≈USD 600'),
 ])
 
@@ -232,7 +243,7 @@ table([
 ])
 para('Sheet "Venue Notes": mỗi dòng là một ghi chú hiện trong mục "Notes" dưới bảng. Cột Applies To chọn Conferences, Journals hoặc All (hiện ở cả hai bảng); cột Note là nội dung ghi chú.')
 
-section('9. WEBSITE TỰ SẮP XẾP NHƯ THẾ NÀO?', 'Bạn có thể nhập dòng theo bất kỳ thứ tự nào: web luôn tự sắp xếp lại như sau.')
+section('9. WEBSITE TỰ SẮP XẾP NHƯ THẾ NÀO?', 'Bạn có thể nhập dòng theo bất kỳ thứ tự nào: web luôn tự sắp xếp lại như sau. Bảng dưới là thứ tự MẶC ĐỊNH; người xem còn tự sắp xếp và lọc được (xem cuối mục).')
 table([
     ('Publications', '', 'Chế độ By year: năm mới nhất lên trước. Trong mỗi năm: Published và Thesis trước, rồi Accepted, rồi In Submission. Các bài cùng một hội nghị/tạp chí được gom cạnh nhau, '
      'trong đó bài mới hơn lên trước; bài trùng ngày và trùng nơi đăng xếp theo tên A→Z. Chế độ By type: chia nhóm Journal, Conference, Thesis, Submission, cũng gom theo nơi đăng.', '3 năm gần nhất mở sẵn, các năm cũ thu gọn'),
@@ -245,6 +256,13 @@ table([
      'Khi người xem chọn Sort: Fastest first: theo Time to Publish (số lớn, rồi số nhỏ), rồi Rank, rồi tên. Sort: Lowest fee: Free trước, rồi phí tăng dần, rồi Rank, rồi tên.', 'Q1 Applied Soft Computing → Q1 Medical Image Analysis → Q2 ...'),
     ('Directions, Venue Notes', '', 'Giữ đúng thứ tự dòng trong sheet (bạn tự quyết thứ tự).', ''),
 ])
+para('Trên trang research.html, mục Where to publish, người xem có thể:', bold=True)
+para('• Tìm kiếm theo tên (hội nghị: tên viết tắt, tên đầy đủ, kỷ yếu; tạp chí: tên, nhà xuất bản).')
+para('• Lọc hội nghị theo Rank, Direction, Deadline (có "Next 3 months"), Held in, Hybrid (Yes/No) và mức phí Regular tối đa; lọc tạp chí theo Rank, Direction, Time to publish, Publication fee và Publisher. '
+     'Mỗi lựa chọn hiện số kết quả; bộ lọc đang bật hiện thành nhãn có dấu × để bỏ, và có nút "Clear all".')
+para('• Sắp xếp bằng ô "Sort by" hoặc bấm vào tiêu đề cột (bấm lại để đảo chiều ↑/↓). Sắp xếp nhiều tầng: lựa chọn mới nhất là tầng 1, các lựa chọn trước đó thành tầng 2, 3 '
+     '(ví dụ xếp theo Rank rồi bấm Fee thì bảng xếp theo Fee, cùng phí thì theo Rank). Nút "Reset sort" đưa về thứ tự mặc định. '
+     'Hội nghị: Deadline, Upcoming deadline (gần nhất tính từ tháng hiện tại), Rank, Fee, Held in, Name. Tạp chí: Rank, Fastest to publish, Free first then lowest APC, Lowest open-access fee, Name, Publisher.')
 
 section('10. GẶP LỖI THÌ KIỂM TRA GÌ?')
 para('• Web báo "Could not load" hoặc "was not found": kiểm tra file vẫn tên đúng là database.xlsx, nằm trong thư mục data, và đã Push lên GitHub.')
