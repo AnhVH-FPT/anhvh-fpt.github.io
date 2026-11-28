@@ -92,7 +92,7 @@ const CFG = {
   },
   'Home Items': {
     icon: '🗂️', group: 'pages', desc: 'Các danh sách trên trang chủ: Education, Experience, Courses, Honors, Service (cột Section). Thứ tự dòng trong cùng một Section = thứ tự hiện trên web.',
-    key: null, title: r => r.Section + ' · ' + r.Title, ordered: true, cols: ['Section', 'Title', 'Organization', 'Dates'], filters: ['Section'], required: ['Section', 'Title'],
+    key: null, title: r => r.Section + ' · ' + r.Title, ordered: true, orderWithin: 'Section', cols: ['Section', 'Title', 'Organization', 'Dates'], filters: ['Section'], required: ['Section', 'Title'],
     fields: { Title: { wide: 1 }, Organization: { wide: 1 }, Dates: { wide: 1 }, Description: { long: 4, wide: 1 } },
     site: r => (r.Section === 'Education' ? 'index.html#about' : 'index.html#experience'),
   },
@@ -149,7 +149,29 @@ async function loadImages() { try { IMAGES = (await api('/api/images')).images; 
 const cfg = s => CFG[s] || { icon: '▦', desc: '', cols: DB.sheets[s].headers.slice(0, 5), required: [], fields: {}, title: r => Object.values(r)[0] };
 
 /* ------------------------------------------------------------ state */
-let DB = null, PRED = null, view = 'overview', editing = null, busy = false, lastVersion = '';
+let DB = null, PRED = null, view = 'overview', lock = null, editing = null, busy = false, lastVersion = '';
+// Sidebar, grouped by web page. An entry with "lock" shows one sheet already filtered on one column
+// (e.g. Home Items where Section = Education), so each part of a page has its own place.
+const NAV = [
+  { page: 'Trang chủ · index.html' },
+  { sub: 'Nội dung trang' },
+  { s: 'Page Text', lock: ['Page', 'Home'], label: 'Phần đầu & chữ', icon: '🏠', desc: 'Avatar, tên, câu giới thiệu, About, các dòng giới thiệu dưới tiêu đề, khung Join của trang chủ. Bấm một dòng để sửa.' },
+  { s: 'Home Items', lock: ['Section', 'Education'], label: 'Education', icon: '🏫', desc: 'Khung Education trong mục About. Thứ tự dòng = thứ tự hiện trên web (↑ ↓ trong biểu mẫu để đổi).' },
+  { s: 'Home Items', lock: ['Section', 'Experience'], label: 'Experience', icon: '💼', desc: 'Dòng thời gian Academic trong mục Experience. Công việc mới nhất để trên cùng.' },
+  { s: 'Home Items', lock: ['Section', 'Courses'], label: 'Courses', icon: '📘', desc: 'Danh sách môn dạy trong mục Experience. Tiêu đề của danh sách sửa ở “Phần đầu & chữ” → Courses heading.' },
+  { s: 'Home Items', lock: ['Section', 'Honors'], label: 'Honors and awards', icon: '🏆', desc: 'Honors and awards trong mục Experience.' },
+  { s: 'Home Items', lock: ['Section', 'Service'], label: 'Academic service', icon: '🤝', desc: 'Academic service trong mục Experience.' },
+  { sub: 'Dữ liệu' },
+  { s: 'Publications' }, { s: 'Projects' }, { s: 'Directions', note: 'dùng ở cả hai trang' },
+  { page: 'Trang research.html' },
+  { sub: 'Nội dung trang' },
+  { s: 'Page Text', lock: ['Page', 'Research'], label: 'Phần đầu & chữ', icon: '🧾', desc: 'Phần đầu trang, 3 bước, khung quyền lợi/yêu cầu, các dòng giới thiệu và ghi chú của trang research.html. Có thể dùng **chữ đậm** và [chữ](link).' },
+  { sub: 'Dữ liệu' },
+  { s: 'Topics' }, { s: 'Conferences' }, { s: 'Journals' }, { s: 'Venue Notes' },
+];
+const navEntry = () => NAV.find(n => n.s === view && (lock ? n.lock && n.lock[1] === lock.v : !n.lock));
+const vkey = () => view + (lock ? '@' + lock.v : '');
+const inLock = r => !lock || r[lock.h] === lock.v;
 const UI = {};                              // per sheet: {q, filters, sort, sel:Set}
 const ui = s => UI[s] || (UI[s] = { q: '', filters: {}, conds: [], sort: [], cols: null, panel: null, sel: new Set() });
 
@@ -347,23 +369,19 @@ const confirmBox = (title, html, yes, danger) => dialog(title, html, [{ t: 'Hủ
 
 function renderNav() {
   const iss = allIssues();
-  const count = s => iss[s].reduce((n, a) => n + (a.some(x => x.level === 'err') ? 1 : 0), 0);
-  const total = DB.order.reduce((n, s) => n + count(s), 0);
-  $('#nav').innerHTML = `<a href="#overview" class="${view === 'overview' ? 'on' : ''}"><span>◈</span> Tổng quan ${total ? `<span class="bad">${total}</span>` : ''}</a>
-    ` + DB.order.map((s, k) => {
-    const c = count(s), g = groupName(s);
-    const head = k === 0 || groupName(DB.order[k - 1]) !== g ? `<div class="grp">${g}</div>` : '';
-    return head + navItem(s, c);
-  }).join('');
-}
-function groupName(s) {
-  const g = cfg(s).group;
-  return g === 'pages' ? 'Chữ trên trang web' : 'Bài báo, đề tài, nơi đăng';
-}
-function navItem(s, c) {
-  {
-    return `<a href="#${encodeURIComponent(s)}" class="${view === s ? 'on' : ''}"><span>${cfg(s).icon}</span> ${esc(s)}${c ? `<span class="bad" title="${c} dòng có lỗi">${c}</span>` : ''}<span class="n">${rowsOf(s).length}</span></a>`;
-  }
+  const bad = (sheet, lk) => iss[sheet].reduce((n, a, i) => n + (a.some(x => x.level === 'err') && (!lk || rowsOf(sheet)[i][lk[0]] === lk[1]) ? 1 : 0), 0);
+  const total = DB.order.reduce((n, s) => n + bad(s), 0);
+  const listed = new Set(NAV.filter(n => n.s && !n.lock).map(n => n.s).concat(NAV.filter(n => n.lock).map(n => n.s)));
+  const extra = DB.order.filter(s => !listed.has(s)).map(s => ({ s }));
+  const entries = NAV.filter(n => !n.s || DB.sheets[n.s]).concat(extra.length ? [{ page: 'Sheet khác' }, ...extra] : []);
+  $('#nav').innerHTML = `<a href="#overview" class="${view === 'overview' ? 'on' : ''}"><span>◈</span> Tổng quan ${total ? `<span class="bad">${total}</span>` : ''}</a>` +
+    entries.map(n => {
+      if (n.page) return `<div class="grp">${esc(n.page)}</div>`;
+      if (n.sub) return `<div class="sub">${esc(n.sub)}</div>`;
+      const key = n.s + (n.lock ? '@' + n.lock[1] : ''), on = vkey() === key && view !== 'overview';
+      const c = bad(n.s, n.lock), cnt = n.lock ? rowsOf(n.s).filter(r => r[n.lock[0]] === n.lock[1]).length : rowsOf(n.s).length;
+      return `<a href="#${encodeURIComponent(key)}" class="${on ? 'on' : ''}" ${n.note ? `title="${esc(n.note)}"` : ''}><span>${n.icon || cfg(n.s).icon}</span> ${esc(n.label || n.s)}${c ? `<span class="bad" title="${c} dòng có lỗi">${c}</span>` : ''}<span class="n">${cnt}</span></a>`;
+    }).join('');
 }
 
 function render() {
@@ -373,9 +391,10 @@ function render() {
     $('#title').textContent = 'Tổng quan'; $('#subtitle').textContent = 'Mọi thay đổi ở đây được ghi thẳng vào data/database.xlsx.';
     top.innerHTML = ''; renderOverview(); return;
   }
-  const C = cfg(view);
-  $('#title').textContent = view; $('#subtitle').textContent = C.desc;
-  top.innerHTML = `<a class="btn" target="_blank" rel="noopener" href="/site/${esc(C.site ? C.site({}).replace(/#.*/, '') : 'index.html')}">Xem trên web ↗</a>
+  const C = cfg(view), N = navEntry();
+  $('#title').textContent = N && N.label ? N.label : view;
+  $('#subtitle').textContent = N && N.desc ? N.desc + ' (sheet ' + view + ')' : C.desc;
+  top.innerHTML = `<a class="btn" target="_blank" rel="noopener" href="/site/${esc(C.site ? C.site(lock ? { [lock.h]: lock.v } : {}) : 'index.html')}">Xem trên web ↗</a>
     ${C.fixed ? '' : '<button class="btn primary" type="button" id="addbtn">＋ Thêm dòng</button>'}`;
   if ($('#addbtn')) $('#addbtn').onclick = () => openEditor(view, null);
   renderSheet();
@@ -426,11 +445,11 @@ const GUIDE_HTML = `
 
 <details><summary>5. Chữ trên trang web: avatar, About, Education, Experience, các dòng giới thiệu…</summary>
 <ul class="steps">
-  <li>Nhóm <b>Chữ trên trang web</b> ở cột trái có 2 sheet. Sửa xong bấm Lưu, rồi “Xem trên web” để xem ngay.</li>
-  <li><b>Page Text</b>: mọi dòng chữ cố định của hai trang. Cột <b>Page</b> = Home (trang chủ) hoặc Research (research.html); dùng ô lọc Page để chỉ xem một trang. Không thêm/xóa dòng, chỉ sửa cột Value; mỗi dòng có ghi chú nó hiện ở đâu.
+  <li>Cột trái chia theo trang web: <b>Trang chủ · index.html</b> và <b>Trang research.html</b>. Mỗi trang có phần <b>Nội dung trang</b> (các dòng chữ và danh sách của trang) và phần <b>Dữ liệu</b> (bài báo, đề tài, hội nghị…). Trang chủ có các mục Phần đầu &amp; chữ, Education, Experience, Courses, Honors and awards, Academic service: mỗi mục chỉ hiện đúng phần đó, thêm dòng mới tự vào đúng mục. Sửa xong bấm Lưu, rồi “Xem trên web”.</li>
+  <li><b>Phần đầu &amp; chữ</b> (trong file Excel là sheet <b>Page Text</b>, cột Page = Home hoặc Research): không thêm/xóa dòng, chỉ sửa cột Value; mỗi dòng có ghi chú nó hiện ở đâu.
     <br>• Home: <b>Avatar</b> (chọn ảnh có trong thư mục website hoặc “Tải ảnh từ máy lên…”: ảnh được chép vào <code>assets/img</code>), Kicker / Name / Headline / Affiliation (đầu trang), <b>About</b> (dòng trống để tách đoạn), các dòng Intro: …, Courses heading, Join text.
     <br>• Research: Kicker / Title / Lead, 3 bước, khung quyền lợi/yêu cầu (các mục “… list”: mỗi ý một dòng), các dòng Intro: …, Contact note. Có thể ghi <code>**chữ đậm**</code> và <code>[chữ](link)</code>.</li>
-  <li><b>Home Items</b>: các danh sách trên trang chủ. Cột <b>Section</b> chọn nơi hiện: Education, Experience, Courses, Honors, Service. Biểu mẫu chỉ hiện các ô mà Section đó dùng. Thứ tự các dòng cùng Section = thứ tự trên web (dùng ↑ ↓ để đổi).</li>
+  <li><b>Education, Experience, Courses, Honors and awards, Academic service</b> (trong file Excel là sheet <b>Home Items</b>, cột Section): biểu mẫu chỉ hiện các ô mà mục đó dùng; thứ tự dòng = thứ tự trên web, dùng ↑ ↓ để đổi.</li>
   <li>Khi đưa lên mạng: commit cả <code>data/database.xlsx</code> và ảnh mới trong <code>assets/img</code> (GitHub Desktop tự liệt kê), rồi Push origin.</li>
 </ul></details>
 
@@ -537,7 +556,7 @@ function renderOverview() {
           <span><a data-go="${esc(x.s)}|${x.i}">${esc(x.s)} · ${esc(r._code || 'số ' + (x.i + 1))}</a> <span class="where">(${esc(x.field)})</span><br>${esc(x.msg)}</span></li>`;
       }).join('')}</ul>${list.length > 150 ? `<p>… và ${list.length - 150} mục khác.</p>` : ''}</div>
     ${GUIDE_HTML}`;
-  $('#view').querySelectorAll('[data-go]').forEach(a => a.onclick = () => { const [s, i] = a.dataset.go.split('|'); go(s); openEditor(s, +i); });
+  $('#view').querySelectorAll('[data-go]').forEach(a => a.onclick = () => { const [s, i] = a.dataset.go.split('|'); const n = NAV.find(x => x.s === s && x.lock && rowsOf(s)[+i][x.lock[0]] === x.lock[1]); go(s, n ? n.lock[1] : null); openEditor(s, +i); });
 }
 
 /* ------------------------------------------------------------ sheet table */
@@ -610,9 +629,10 @@ function savePrefs(sheet) {
 }
 
 function filtered(sheet) {
-  const st = ui(sheet), H = DB.sheets[sheet].headers;
+  const st = ui(sheet === view ? vkey() : sheet), H = DB.sheets[sheet].headers;
   const q = norm(st.q).split(' ').filter(Boolean);
   let rows = rowsOf(sheet).filter(r => {
+    if (sheet === view && !inLock(r)) return false;
     for (const [h, v] of Object.entries(st.filters)) {
       if (!v || h === '_issues') continue;
       if (!testCond(sheet, r, { h, op: 'eq', v })) return false;
@@ -660,12 +680,13 @@ function valueChoices(sheet, h) {
 }
 
 function renderSheet() {
-  const sheet = view, st = ui(sheet), C = cfg(sheet), S = DB.sheets[sheet];
-  if (!st._loaded) { loadPrefs(sheet, st); st._loaded = true; }
-  const defCols = (C.cols || S.headers.slice(0, 5)).filter(h => S.headers.includes(h));
-  const cols = (st.cols || defCols).filter(h => S.headers.includes(h));
+  const sheet = view, key = vkey(), st = ui(key), C = cfg(sheet), S = DB.sheets[sheet];
+  if (!st._loaded) { loadPrefs(key, st); st._loaded = true; }
+  const defCols = (C.cols || S.headers.slice(0, 5)).filter(h => S.headers.includes(h) && !(lock && h === lock.h));
+  const cols = (st.cols || defCols).filter(h => S.headers.includes(h) && !(lock && h === lock.h));
   const rows = filtered(sheet), iss = allIssues()[sheet];
-  const total = rowsOf(sheet).length;
+  const mine = rowsOf(sheet).filter(inLock), total = mine.length;
+  const pos = new Map(mine.map((r, k) => [r._i, k + 1]));          // number rows 1..n inside this view
   const quick = h => {
     const vals = valueChoices(sheet, h) || [];
     return `<select data-f="${esc(h)}" class="${st.filters[h] ? 'act' : ''}" aria-label="${esc(h)}"><option value="">${esc(h)}: tất cả</option>${vals.map(v => `<option ${st.filters[h] === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>`;
@@ -695,7 +716,7 @@ function renderSheet() {
   $('#view').innerHTML = `
     <div class="tools">
       <label class="search"><input type="search" id="q" placeholder="Tìm trong mọi cột…  (phím /)" value="${esc(st.q)}"></label>
-      ${(C.filters || []).filter(h => S.headers.includes(h)).map(quick).join('')}
+      ${(C.filters || []).filter(h => S.headers.includes(h) && !(lock && h === lock.h)).map(quick).join('')}
       <select data-f="_issues" class="${st.filters._issues ? 'act' : ''}" aria-label="Kiểm tra"><option value="">Kiểm tra: tất cả</option>
         <option value="err" ${st.filters._issues === 'err' ? 'selected' : ''}>Có lỗi (${nErr})</option>
         <option value="any" ${st.filters._issues === 'any' ? 'selected' : ''}>Có lỗi/cảnh báo (${nAny})</option></select>
@@ -732,12 +753,12 @@ function renderSheet() {
       const a = iss[r._i], lv = a.some(x => x.level === 'err') ? 'err' : a.length ? 'warn' : '';
       return `<tr data-i="${r._i}" class="${st.sel.has(r._i) ? 'sel' : ''} ${r.Status === 'Taken' ? 'taken' : ''}">
         <td class="ck"><input type="checkbox" data-ck="${r._i}" ${st.sel.has(r._i) ? 'checked' : ''} aria-label="Chọn dòng"></td>
-        <td class="rn">${C.codeCol ? `<span class="code">${esc(r._code)}</span>` : r._i + 1}${lv ? `<span class="issue-dot ${lv}" title="${esc(a.map(x => x.field + ': ' + x.msg).join('\n'))}"></span>` : ''}</td>
+        <td class="rn">${C.codeCol ? `<span class="code">${esc(r._code)}</span>` : pos.get(r._i)}${lv ? `<span class="issue-dot ${lv}" title="${esc(a.map(x => x.field + ': ' + x.msg).join('\n'))}"></span>` : ''}</td>
         ${cols.map((h, k) => `<td class="${k > 2 ? 'hide-sm' : ''}">${cellHtml(sheet, h, r[h])}</td>`).join('')}</tr>`;
     }).join('')}</tbody></table>` : `<div class="empty">Không có dòng nào khớp. ${total ? '<button class="btn sm" type="button" id="clrall2">Xóa hết bộ lọc</button>' : 'Bấm “Thêm dòng” để bắt đầu.'}</div>`}</div>`;
 
   const v = $('#view');
-  const redraw = () => { savePrefs(sheet); renderSheet(); };
+  const redraw = () => { savePrefs(key); renderSheet(); };
   const on = (id, fn) => { const el = $('#' + id); if (el) el.onclick = fn; };
   const q = $('#q'); let qt;
   q.oninput = () => { clearTimeout(qt); qt = setTimeout(() => { st.q = q.value; const pos = q.selectionStart; renderSheet(); const n = $('#q'); n.focus(); n.setSelectionRange(pos, pos); }, 150); };
@@ -758,7 +779,7 @@ function renderSheet() {
     else {
       let t;
       el.oninput = () => { clearTimeout(t); t = setTimeout(() => {
-        const k = el.dataset.cv, pos = el.selectionStart; st.conds[+k].v = el.value; savePrefs(sheet); renderSheet();
+        const k = el.dataset.cv, pos = el.selectionStart; st.conds[+k].v = el.value; savePrefs(key); renderSheet();
         const n = v.querySelector(`[data-cv="${k}"]`); if (n) { n.focus(); n.setSelectionRange(pos, pos); }
       }, 250); };
     }
@@ -857,17 +878,21 @@ function openEditor(sheet, index, preset) {
     for (const h of S.headers) { const o = S.options[h]; if (Array.isArray(o) && (C.required || []).includes(h)) r[h] = o[0]; }
     if (sheet === 'Topics') { r.Status = 'Open'; const f = ui('Topics').filters.Direction; r.Direction = codes().includes(f) ? f : codes()[0]; }
     if (sheet === 'Conferences') r.Directions = 'All';
-    if (sheet === 'Home Items') { const f = ui('Home Items').filters.Section; if (f) r.Section = f; }
+    if (lock && sheet === view) r[lock.h] = lock.v;                 // a new row belongs to the part being viewed
   }
-  const title = isNew ? 'Thêm dòng mới' : (C.title(r) || 'Mục số ' + (index + 1));
-  $('#dkicker').textContent = sheet + (isNew ? '' : ' · ' + (r._code ? r._code + ' · ' : '') + 'mục số ' + (index + 1));
+  // ↑ ↓ move a row among the rows of the same group (Home Items: same Section), which is the order the page shows
+  const grp = C.orderWithin, sibs = rowsOf(sheet).filter(o => !grp || o[grp] === r[grp]).map(o => o._i), at = sibs.indexOf(index);
+  editing.prev = at > 0 ? sibs[at - 1] : null; editing.next = at >= 0 && at < sibs.length - 1 ? sibs[at + 1] : null;
+  const num = at >= 0 ? at + 1 : index + 1;
+  const title = isNew ? 'Thêm dòng mới' : (C.title(r) || 'Mục số ' + num);
+  $('#dkicker').textContent = sheet + (isNew ? '' : ' · ' + (r._code ? r._code + ' · ' : '') + 'mục số ' + num);
   $('#dtitle').textContent = title;
   const topicNote = sheet === 'Topics' ? `<div class="note">Mã đề tài ${isNew ? 'sẽ là' : 'hiện là'} <b class="code" id="tcode"></b>. Mã tính theo vị trí dòng trong hướng: thêm vào cuối, và khi có người nhận đề tài thì đặt Status = <b>Taken</b> thay vì xóa.</div>` : '';
   $('#dbody').innerHTML = `${topicNote}<div class="sumbox" id="sum" hidden></div><div class="fgrid">${S.headers.map(h => fieldHtml(sheet, h, r[h] ?? '', isNew)).join('')}</div>`;
   const site = C.site && !isNew ? C.site(r) : null;
   $('#dfoot').innerHTML = `<button class="btn primary" type="button" id="dsave">${isNew ? 'Thêm vào Excel' : 'Lưu'} <kbd style="color:#dfe7ff;border-color:#7d97ff">Ctrl S</kbd></button>
     <button class="btn" type="button" id="dcancel">Hủy</button><span class="sp"></span>
-    ${!isNew && C.ordered ? `<button class="btn sm" type="button" id="dup" title="Chuyển lên một dòng" ${index === 0 ? 'disabled' : ''}>↑</button><button class="btn sm" type="button" id="ddown" title="Chuyển xuống một dòng" ${index === S.rows.length - 1 ? 'disabled' : ''}>↓</button>` : ''}
+    ${!isNew && C.ordered ? `<button class="btn sm" type="button" id="dup" title="Chuyển lên một dòng" ${editing.prev == null ? 'disabled' : ''}>↑</button><button class="btn sm" type="button" id="ddown" title="Chuyển xuống một dòng" ${editing.next == null ? 'disabled' : ''}>↓</button>` : ''}
     ${site ? `<a class="btn sm" target="_blank" rel="noopener" href="/site/${esc(site)}">Xem trên web ↗</a>` : ''}
     ${!isNew && !C.fixed ? `<button class="btn sm" type="button" id="dcopy">Nhân bản</button>` : ''}
     ${!isNew && sheet === 'Topics' ? `<button class="btn sm" type="button" id="dtaken">${r.Status === 'Taken' ? 'Mở lại (Open)' : 'Đánh dấu Taken'}</button>` : ''}
@@ -875,7 +900,7 @@ function openEditor(sheet, index, preset) {
   wireForm(sheet);
   dirty = false;
   $('#drawer').classList.add('open'); $('#drawer').setAttribute('aria-hidden', 'false'); $('#scrim').hidden = false;
-  history.replaceState(null, '', '#' + encodeURIComponent(sheet) + (isNew ? '/new' : '/' + (index + 1)));
+  history.replaceState(null, '', '#' + encodeURIComponent(sheet === view ? vkey() : sheet) + (isNew ? '/new' : '/' + (index + 1)));
   setTimeout(() => { const first = $('#dbody').querySelector('input:not([type=hidden]),select,textarea'); first && isNew && first.focus(); }, 220);
 }
 
@@ -1028,8 +1053,8 @@ function wireForm(sheet) {
   $('#dsave').onclick = saveEditor;
   $('#dcancel').onclick = closeEditor;
   const { index } = editing;
-  $('#dup') && ($('#dup').onclick = () => moveRow(index, index - 1));
-  $('#ddown') && ($('#ddown').onclick = () => moveRow(index, index + 1));
+  $('#dup') && ($('#dup').onclick = () => editing.prev != null && moveRow(index, editing.prev));
+  $('#ddown') && ($('#ddown').onclick = () => editing.next != null && moveRow(index, editing.next));
   $('#dcopy') && ($('#dcopy').onclick = async () => {
     if (dirty && !await confirmBox('Bỏ thay đổi?', 'Các thay đổi chưa lưu sẽ mất.', 'Tiếp tục')) return;
     const v = formValues(); const k = cfg(sheet).key; if (k && v[k]) v[k] += ' (copy)';
@@ -1131,24 +1156,28 @@ async function closeEditor(force) {
   if (force !== true && dirty && !await confirmBox('Bỏ thay đổi?', 'Bạn có thay đổi chưa lưu. Đóng mà không lưu?', 'Đóng, không lưu', true)) return;
   editing = null; dirty = false;
   $('#drawer').classList.remove('open'); $('#drawer').setAttribute('aria-hidden', 'true'); $('#scrim').hidden = true;
-  history.replaceState(null, '', '#' + encodeURIComponent(view));
+  history.replaceState(null, '', '#' + encodeURIComponent(vkey()));
 }
 function flash(i) {
   requestAnimationFrame(() => { const tr = $('#view').querySelector(`tr[data-i="${i}"]`); if (tr) { tr.classList.add('flash'); tr.scrollIntoView({ block: 'nearest' }); } });
 }
 
 /* ------------------------------------------------------------ routing + events */
-function go(name) { view = name; $('#side').classList.remove('open'); renderNav(); render(); if (location.hash.split('/')[0] !== '#' + encodeURIComponent(name)) history.replaceState(null, '', '#' + encodeURIComponent(name)); $('#view').scrollTop = 0; }
+function setView(name, lv) {
+  const n = lv != null && NAV.find(x => x.s === name && x.lock && x.lock[1] === lv);
+  view = name; lock = n ? { h: n.lock[0], v: n.lock[1] } : null;
+}
+function go(name, lv) { setView(name, lv); $('#side').classList.remove('open'); renderNav(); render(); if (location.hash.split('/')[0] !== '#' + encodeURIComponent(vkey())) history.replaceState(null, '', '#' + encodeURIComponent(vkey())); $('#view').scrollTop = 0; }
 function route() {
-  const [s, row] = decodeURIComponent(location.hash.slice(1)).split('/');
-  const name = DB.sheets[s] ? s : 'overview';
+  const [k, row] = decodeURIComponent(location.hash.slice(1)).split('/');
+  const [s, lv] = (k || '').split('@');
   if (editing) { closeEditor(true); }
-  view = name; renderNav(); render();
+  setView(DB.sheets[s] ? s : 'overview', lv); renderNav(); render();
   if (DB.sheets[s] && row) { if (row === 'new') openEditor(s, null); else if (+row >= 1 && rowsOf(s)[+row - 1]) openEditor(s, +row - 1); }
 }
 addEventListener('hashchange', async () => {
   if (editing && dirty && !await confirmBox('Bỏ thay đổi?', 'Bạn có thay đổi chưa lưu. Rời biểu mẫu mà không lưu?', 'Rời đi', true)) {
-    history.replaceState(null, '', '#' + encodeURIComponent(editing.sheet) + (editing.isNew ? '/new' : '/' + (editing.index + 1))); return;
+    history.replaceState(null, '', '#' + encodeURIComponent(editing.sheet === view ? vkey() : editing.sheet) + (editing.isNew ? '/new' : '/' + (editing.index + 1))); return;
   }
   dirty = false; route();
 });
