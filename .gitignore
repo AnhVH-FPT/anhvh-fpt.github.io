@@ -3,5 +3,7 @@
 .DS_Store
 Thumbs.db
 
-# Local database manager (runs on this computer only, never published)
-admin/
+# Database manager: the code is in the repo (not published, see _config.yml); its backups stay on each computer
+admin/backups/
+__pycache__/
+.claude/

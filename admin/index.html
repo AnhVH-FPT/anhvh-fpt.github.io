@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Database manager</title>
+<link rel="icon" href="/site/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side">
+    <div class="brand"><img src="/site/assets/img/favicon.svg" alt=""><div><b>Database manager</b><small>Ha Anh Vu · website</small></div></div>
+    <nav id="nav" aria-label="Sheets"></nav>
+    <div class="sidefoot">
+      <div class="sync" id="sync"><i></i><span>Đang kết nối…</span></div>
+      <button type="button" class="btn ghost full" id="undo" title="Đưa file Excel về trạng thái trước thao tác gần nhất">↶ Hoàn tác thao tác cuối</button>
+      <a class="btn ghost full" href="/site/index.html" target="_blank" rel="noopener">Xem website (dữ liệu hiện tại) ↗</a>
+      <p class="file" id="file"></p>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="top">
+      <button type="button" class="iconbtn menu" id="menu" aria-label="Mở menu">☰</button>
+      <div class="ttl"><h1 id="title">Tổng quan</h1><p id="subtitle"></p></div>
+      <div class="topact" id="topact"></div>
+    </header>
+    <div class="banner" id="banner" hidden></div>
+    <section id="view" class="view"></section>
+  </main>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <header class="dhead">
+    <div><span class="dkicker" id="dkicker"></span><h2 id="dtitle"></h2></div>
+    <button type="button" class="iconbtn" id="dclose" aria-label="Đóng">✕</button>
+  </header>
+  <div class="dbody" id="dbody"></div>
+  <footer class="dfoot" id="dfoot"></footer>
+</aside>
+
+<div class="modal" id="modal" hidden><div class="mbox" role="dialog" aria-modal="true">
+  <h3 id="mtitle"></h3><div id="mtext"></div><div class="mact" id="mact"></div>
+</div></div>
+<div class="toasts" id="toasts"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

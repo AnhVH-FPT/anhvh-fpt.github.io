@@ -5,17 +5,28 @@ Static site (plain HTML, CSS, JavaScript). No build step, no dependencies. Works
 ## Project structure
 
 ```
-academic-site/
-├── index.html            # Page content 
-├── README.md
-├── data/
-│   └── database.xlsx     # The site database: publications, projects, topics, venues (edit in Excel)
-├── .nojekyll             # Tells GitHub Pages to serve files as they are
-└── assets/
-    ├── css/style.css     # Design tokens (light/dark) and layout
-    ├── js/main.js        # Publications data, theme toggle, hero animation
-    └── img/              # Put avatar.png here
+.
+├── index.html, research.html   # The two pages
+├── data/database.xlsx          # The site database (edit with the database manager or Excel)
+├── assets/                     # css/, js/, img/
+├── admin/                      # Database manager (local tool, NOT published on the website)
+│   ├── Open database manager.bat   # double-click to start it on Windows
+│   ├── server.py, index.html, app.js, app.css, requirements.txt
+│   └── predatory/              # predatory journal / publisher lists used for warnings
+├── tools/build_guide.py        # regenerates the "Hướng dẫn" sheet in the workbook (not published)
+├── _config.yml                 # GitHub Pages: publish the site, leave out admin/, tools/, README.md, CLAUDE.md
+├── README.md, CLAUDE.md        # documentation (not published)
 ```
+
+Everything needed to edit the site is in this repository. Backups made by the database manager (`admin/backups/`) stay on each computer and are not committed.
+
+## Work on a new computer
+
+1. Install **GitHub Desktop** (sign in with the GitHub account) and **Python 3** from python.org (tick "Add python.exe to PATH" during setup).
+2. In GitHub Desktop: **File → Clone repository → `AnhVH-FPT/anhvh-fpt.github.io`**, choose a folder (for example `E:\Coding\Resume`).
+3. Double-click `admin\Open database manager.bat` in that folder. The first time it installs `openpyxl` automatically, then opens `http://localhost:8765/`.
+4. Edit, then in GitHub Desktop: **Commit to main → Push origin**.
+5. When you switch between computers, press **Fetch origin / Pull origin** in GitHub Desktop first, so you edit the latest database.
 
 ## Run locally
 
@@ -48,7 +59,7 @@ python3 -m http.server 8000   # then visit http://localhost:8000
 
 ## Update publications and projects (Excel)
 
-**Easiest way: the database manager.** Double-click `admin\Open database manager.bat` (in the owner's local folder only; `admin/` is git-ignored and never published). It starts a small local server (`python admin/server.py`, needs `openpyxl`) and opens `http://localhost:8765/`: every sheet as a searchable, filterable table, a form to add/edit/duplicate/delete rows, data checks (missing fields, topic template, unknown direction codes, predatory journals), and each Save writes straight into `data/database.xlsx` (Excel must be closed). Backups of the previous file are kept in `admin/backups/` and "Undo" restores them. "Xem website" previews the site with the current workbook. Then commit and push with GitHub Desktop as usual.
+**Easiest way: the database manager.** Double-click `admin\Open database manager.bat` (it is in the repository but not published on the website, see `_config.yml`). It starts a small local server (`python admin/server.py`, needs `openpyxl`) and opens `http://localhost:8765/`: every sheet as a searchable, filterable table, a form to add/edit/duplicate/delete rows, data checks (missing fields, topic template, unknown direction codes, predatory journals), and each Save writes straight into `data/database.xlsx` (Excel must be closed). Backups of the previous file are kept in `admin/backups/` and "Undo" restores them. "Xem website" previews the site with the current workbook. Then commit and push with GitHub Desktop as usual.
 
 To edit in Excel instead:
 

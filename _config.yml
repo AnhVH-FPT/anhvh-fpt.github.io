@@ -1,0 +1,10 @@
+# GitHub Pages settings.
+# The site is plain HTML/CSS/JS: Jekyll only copies the files (no page has front matter, so nothing is templated).
+# Everything below stays in the repository (so a fresh clone has it) but is NOT published on the website.
+exclude:
+  - admin            # local database manager (python admin/server.py), runs only on your computer
+  - tools            # build_guide.py: regenerates the guide sheet
+  - README.md
+  - CLAUDE.md
+  - .claude
+  - .gitignore

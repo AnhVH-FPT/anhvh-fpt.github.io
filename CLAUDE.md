@@ -13,7 +13,7 @@ Read this before changing anything. It records how the site works and the decisi
 
 ## What the site is
 
-Static site on GitHub Pages (repo `AnhVH-FPT/anhvh-fpt.github.io`, branch `main`, root folder). Plain HTML, CSS and JavaScript: **no build step, no npm**. All paths are relative. `.nojekyll` makes Pages serve files as they are.
+Static site on GitHub Pages (repo `AnhVH-FPT/anhvh-fpt.github.io`, branch `main`, root folder). Plain HTML, CSS and JavaScript: **no build step, no npm**. All paths are relative. `_config.yml` keeps `admin/`, `tools/` and the docs off the published site.
 
 | File | Role |
 |---|---|
@@ -65,7 +65,7 @@ Editing the workbook from code: use openpyxl, keep data validations (Direction, 
 
 ## Database manager (admin/, local only)
 
-The owner edits the workbook through a local web app instead of Excel. It lives **only** in `E:\Coding\Resume\admin\` and is git-ignored (owner: "không publish trên web"), so a worktree does not contain it: edit it in place there.
+The owner edits the workbook through a local web app instead of Excel. It is **in the repository** under `admin/` (so a fresh clone on another computer works) but **not published**: `_config.yml` excludes `admin/`, `tools/`, `README.md`, `CLAUDE.md` from GitHub Pages (there is no `.nojekyll`; Jekyll only copies files since no page has front matter, so never add front matter to the HTML). `admin/backups/` is git-ignored. Predatory lists live in `admin/predatory/` (predatory-journals.xlsx, predatory-publishers.xlsx). The .bat checks for Python and installs `openpyxl` from `admin/requirements.txt` on first run.
 
 - `server.py` (stdlib http.server + openpyxl, localhost:8765, `--db` / `--port` / `--no-browser` for testing on a copy): `GET /api/db` returns every sheet (headers, rows as display text, dropdown lists read from the data validations); `POST /api/op` does `update` / `insert` / `delete` / `move` / `set` (bulk) / `rename_code` (Directions code renamed in Topics, Conferences, Journals) with an optimistic version check (file mtime+size), rewrites the record rows in place (new rows copy row-2 styles; hyperlinks re-set on link columns), restores the Topics Direction dropdown, backs up to `admin/backups/` (60 kept) and saves atomically. `POST /api/undo` restores the newest backup. Refuses to write while Excel has the file open. `/site/...` serves the website with the current workbook. Reads the predatory lists from `E:\Research\Topic list\` for warnings.
 - `index.html`, `app.js`, `app.css`: Vietnamese UI. Tables: quick filter selects, "Lọc nâng cao" (AND conditions: chứa / không chứa / là / không là / trống / không trống / ≥ / ≤), "Sắp xếp" up to 3 levels (or header click, Shift+click adds a level), column picker; values sort by meaning via `sortKey` (dropdown order, dates, semesters, months, fees in USD), blanks last; per-sheet view settings in localStorage. Topic Dataset is edited as rows of name (required) + link (optional), stored as `• Name` + URL lines. Per-sheet settings in `CFG` (table columns, filters, required fields, hints, quick-insert texts, topic template labels); `checkRow` holds the data checks shown in the form, the table dots and the Overview. **When a sheet's columns or rules change, update `CFG`/`checkRow` too** (and the guide).
