@@ -79,7 +79,7 @@ The owner edits the workbook through a local web app instead of Excel. It is **i
 
 - After changing a CSS or JS file, bump its `?v=N` in every HTML file that loads it, so browsers fetch the new file.
 - Colors are tokens in `:root` / `:root[data-theme=dark]` in style.css; both themes must work; layouts must work at phone width.
-- External scripts only from cdnjs with an exact version; no new dependencies without a reason.
+- External scripts only from cdnjs with an exact version; no new dependencies without a reason. Exception (owner's request): the GoatCounter visit counter `https://gc.zgo.at/count.js` at the end of index.html and research.html (account `haanhvu010799`, no cookies, localhost not counted). research.js also sends GoatCounter events `open/<code>`, `apply/<code>` and `copy-application/<code>`.
 - Do not put private data in the workbook: it is public once pushed.
 - Commit messages: imperative summary line, short body explaining why.
 

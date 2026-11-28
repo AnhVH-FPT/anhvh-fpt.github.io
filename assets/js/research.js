@@ -155,7 +155,7 @@
         </div>
         <div class="tact">
           ${closed ? '<span class="muted">This topic is already taken.</span>'
-            : `<a class="btn pri" href="${mailto(t)}">Apply for this topic</a>`}
+            : `<a class="btn pri apply" data-code="${esc(t.code)}" href="${mailto(t)}">Apply for this topic</a>`}
           ${closed ? '' : `<button type="button" class="btn copy-mail" data-code="${esc(t.code)}">Copy application text</button>`}
           <button type="button" class="btn copy" data-code="${esc(t.code)}">Copy link</button>
           ${closed ? '' : `<p class="tnote">Email app did not open? Copy the application text and send it to <strong>${EMAIL}</strong> from Outlook or Gmail, or message me on Zalo: <strong>0366765835</strong>.</p>`}
@@ -260,8 +260,16 @@
     }
     setTimeout(() => { b.textContent = label; }, 1800);
   };
+  // GoatCounter events (see the script at the end of research.html): which topics students open and apply for.
+  // Shown in the dashboard as paths like "apply/MI-07"; nothing is sent when the counter is blocked or on localhost.
+  const track = (path, title) => { try { window.goatcounter && goatcounter.count && goatcounter.count({ path, title, event: true }); } catch { } };
+  $('#list').addEventListener('toggle', e => {
+    const d = e.target; if (d.classList && d.classList.contains('topic') && d.open) track('open/' + d.id, 'Opened topic ' + d.id);
+  }, true);
   $('#list').addEventListener('click', e => {
+    const a = e.target.closest('a.apply'); if (a) { track('apply/' + a.dataset.code, 'Apply email ' + a.dataset.code); return; }
     const b = e.target.closest('.copy, .copy-mail'); if (!b) return;
+    if (b.classList.contains('copy-mail')) track('copy-application/' + b.dataset.code, 'Copied application text ' + b.dataset.code);
     if (b.classList.contains('copy')) return copy(b, location.href.split('#')[0] + '#' + b.dataset.code, 'Link copied');
     const { subject, body } = mailParts(TOPICS.find(t => t.code === b.dataset.code));
     copy(b, `To: ${EMAIL}\nSubject: ${subject}\n\n${body}`, 'Copied');
