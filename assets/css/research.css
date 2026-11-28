@@ -69,7 +69,6 @@
 .muted{color:var(--muted)}
 
 /* Venues */
-.alt{background:var(--soft)}
 .tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-top:6px}
 .tablewrap table{width:100%;border-collapse:collapse;font-size:.9rem}
 .tablewrap th{text-align:left;font-weight:600;padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;background:var(--surface)}
