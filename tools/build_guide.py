@@ -84,8 +84,8 @@ para('File này (data/database.xlsx) là "cơ sở dữ liệu" của cả websi
 
 para('Tổng quan các sheet (chi tiết từng cột ở các mục bên dưới):', bold=True)
 table([
-    ('Research Page', 'research.html', 'Các dòng chữ cố định của trang research.html: đầu trang, 3 bước, khung quyền lợi/yêu cầu, các dòng giới thiệu (mục 2a).', ''),
-    ('Profile, Education, Experience, Courses, Honors, Service', 'Trang chủ', 'Các nội dung cố định của trang chủ: avatar, tên, câu giới thiệu, About, Education, Experience, môn dạy, giải thưởng, hoạt động học thuật, các dòng giới thiệu dưới tiêu đề (mục 2a).', ''),
+    ('Page Text', 'Cả hai trang', 'Mọi dòng chữ cố định của trang chủ (Page = Home) và research.html (Page = Research): avatar, tên, About, các dòng giới thiệu… (mục 2a).', ''),
+    ('Home Items', 'Trang chủ', 'Các danh sách Education, Experience, môn dạy, Honors and awards, Academic service (mục 2a).', ''),
     ('Publications', 'Trang chủ', 'Danh sách bài báo, mục Publications (xem mục 3).', '13 bài'),
     ('Projects', 'Trang chủ', 'Đề tài luận văn đang hướng dẫn, mục Undergraduate thesis projects (mục 4).', 'Fall 2026 ...'),
     ('Directions', 'Cả hai trang', 'Các hướng nghiên cứu: thẻ Research interests ở trang chủ và nút lọc đề tài ở research.html (mục 5).', 'CV, MI, XAI, EDGE, VLM'),
@@ -115,17 +115,17 @@ para('• Có thể thêm cột ghi chú riêng của bạn: website bỏ qua nh
 para('• Một ô có nhiều dòng: nhấn Alt + Enter để xuống dòng trong cùng một ô.')
 para('• LƯU Ý: file này công khai trên Internet (ai cũng tải được). Không ghi số điện thoại, điểm số hay thông tin riêng tư của sinh viên.')
 
-section('2a. CÁC SHEET NỘI DUNG TRANG: Profile, Education, Experience, Courses, Honors, Service (trang chủ) và Research Page (research.html)',
-        'Cách dễ nhất là sửa bằng Database manager (nhóm "Trang chủ" ở cột trái). Thứ tự dòng trong Education, Experience, Courses, Honors, Service = thứ tự hiện trên web. Sheet nào để trống thì web dùng nội dung có sẵn trong index.html.')
+section('2a. SHEET "Page Text" VÀ "Home Items": chữ trên trang chủ và trang research.html',
+        'Cách dễ nhất là sửa bằng Database manager (nhóm "Chữ trên trang web" ở cột trái). Ô nào để trống thì web dùng chữ có sẵn trong file HTML.')
 table([
-    ('Profile: Field', 'Có', 'Tên mục, cố định. KHÔNG đổi tên, không thêm/xóa dòng (web tìm theo đúng tên này).', 'About'),
-    ('Profile: Value', 'Không', 'Nội dung. Avatar = đường dẫn ảnh trong thư mục website (ví dụ assets/img/avatar.png; ảnh mới phải được chép vào repo và commit cùng file Excel). Kicker / Name / Headline / Affiliation = phần đầu trang. About = mục About (để một dòng trống để tách đoạn). Intro: … = dòng giới thiệu dưới tiêu đề mục. Courses heading = tiêu đề danh sách môn dạy. Join text = đoạn trong khung "Join my research group".', 'assets/img/avatar.png'),
-    ('Education', 'Degree bắt buộc', 'Degree (bằng cấp, in đậm), School (trường), Details (thời gian, GPA… chữ nhỏ màu xám).', 'M.S. in Computational Science'),
-    ('Experience', 'Role bắt buộc', 'Role (chức danh), Organization (đơn vị, chữ xanh), Dates (thời gian), Description (mô tả; dòng trống để tách đoạn). Dòng trên cùng hiện đầu tiên: để công việc mới nhất ở trên.', 'AI Lecturer'),
-    ('Courses', 'Có', 'Mỗi dòng một môn dạy.', 'Machine Learning'),
-    ('Honors', 'Award bắt buộc', 'Award (tên giải, in đậm), Description (mô tả).', 'Teaching Excellence Award, FPT University'),
-    ('Service', 'Role bắt buộc', 'Role (vai trò, in đậm), Detail (hội nghị/tạp chí, năm).', 'Conference reviewer'),
-    ('Research Page: Field / Value', 'Có', 'Các dòng chữ cố định của trang research.html, cách dùng giống Profile (không đổi tên Field). Kicker / Title / Lead = đầu trang; Step 1–3 title/text = 3 thẻ bước; Gain / Requirements / Own idea = 3 cột trong khung xanh đậm (các mục "list": mỗi dòng một ý); Intro: … = dòng giới thiệu dưới tiêu đề; Contact note = ghi chú cuối trang. Có thể ghi **chữ đậm** và [chữ](link).', 'If no email app opens, see [Contact](#contact).'),
+    ('Page Text: Page', 'Có', 'Home = trang chủ (index.html), Research = trang research.html. Không đổi.', 'Home'),
+    ('Page Text: Field', 'Có', 'Tên mục, cố định. KHÔNG đổi tên, không thêm/xóa dòng (web tìm theo đúng Page + Field).', 'About'),
+    ('Page Text: Value', 'Không', 'Nội dung. Home: Avatar = đường dẫn ảnh trong thư mục website (ví dụ assets/img/avatar.png; ảnh mới phải nằm trong repo và commit cùng file Excel); Kicker / Name / Headline / Affiliation = đầu trang; About = mục About (dòng trống để tách đoạn); Intro: … = dòng giới thiệu dưới tiêu đề; Courses heading; Join text. Research: Kicker / Title / Lead; Step 1–3 title/text; Gain / Requirements / Own idea (mục "list": mỗi ý một dòng); Intro: …; Contact note. Bên Research có thể ghi **chữ đậm** và [chữ](link).', 'assets/img/avatar.png'),
+    ('Home Items: Section', 'Có', 'Chọn nơi hiện: Education (khung Education trong About), Experience (dòng thời gian Academic), Courses (danh sách môn dạy), Honors (Honors and awards), Service (Academic service). Thứ tự các dòng cùng Section = thứ tự trên web.', 'Experience'),
+    ('Home Items: Title', 'Có', 'Education: bằng cấp. Experience: chức danh. Courses: tên môn. Honors: tên giải. Service: vai trò.', 'AI Lecturer'),
+    ('Home Items: Organization', 'Không', 'Education: trường. Experience: đơn vị. (Các Section khác không dùng.)', 'Artificial Intelligence Department, FPT University'),
+    ('Home Items: Dates', 'Không', 'Education: thời gian, GPA, xếp loại. Experience: thời gian. (Các Section khác không dùng.)', 'Sep 2025 – Present'),
+    ('Home Items: Description', 'Không', 'Experience: mô tả công việc (dòng trống để tách đoạn). Honors: mô tả giải. Service: hội nghị/tạp chí, năm.', 'Teach undergraduate courses …'),
 ])
 
 section('3. SHEET "Publications": danh sách bài báo  →  trang chủ, mục Publications')
@@ -302,7 +302,7 @@ if not any('A2' in str(dv.sqref) for dv in tw.data_validations.dataValidation):
                         errorTitle='Invalid value', error=msg, promptTitle='Choose', prompt=msg)
     dv.add('A2:A2000')
     tw.add_data_validation(dv)
-order = ['Hướng dẫn', 'Profile', 'Education', 'Experience', 'Courses', 'Honors', 'Service', 'Research Page',
+order = ['Hướng dẫn', 'Page Text', 'Home Items',
          'Publications', 'Projects', 'Directions', 'Topics', 'Conferences', 'Journals', 'Venue Notes']
 wb._sheets = [wb[n] for n in order] + [s for s in wb._sheets if s.title not in order]
 wb.active = 0

@@ -215,15 +215,15 @@
     }).join('');
   };
 
-  /* ----- Home-page text (Profile, Education, Experience, Courses, Honors, Service sheets) -----
+  /* ----- Home-page text: sheets "Page Text" (rows with Page = Home) and "Home Items" -----
      Each element marked data-db="..." in index.html keeps its HTML text as a fallback and is replaced
-     only when the sheet has content, so a missing sheet never empties the page. */
+     only when the workbook has content for it, so a missing sheet never empties the page. */
   const paras = t => txt(t).split(/\n\s*\n/).map(p => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('');
   const lines = t => esc(t).replace(/\n/g, '<br>');
   const fill = (key, html) => { const el = $(`[data-db="${key}"]`); if (el && html) el.innerHTML = html; };
   const renderHome = get => {
     const prof = {};
-    get('Profile').map(row).forEach(r => { if (r.field) prof[r.field.toLowerCase()] = r.value; });
+    get('Page Text').map(row).forEach(r => { if (r.field && (!r.page || r.page.toLowerCase() === 'home')) prof[r.field.toLowerCase()] = r.value; });
     for (const [k, v] of Object.entries(prof)) {
       if (!v || k === 'avatar' || k === 'about') continue;
       const el = $(`[data-db="${k}"]`); if (el) el.textContent = v;
@@ -234,16 +234,18 @@
       const img = $('[data-db="avatar"]');
       if (img && img.getAttribute('src') !== prof.avatar) { img.hidden = false; img.src = prof.avatar; }
     }
-    fill('education', get('Education').map(row).filter(r => r.degree).map(r =>
-      `<p><strong>${esc(r.degree)}</strong>${r.school ? '<br>' + lines(r.school) : ''}${r.details ? `<br><span class="date">${lines(r.details)}</span>` : ''}</p>`).join(''));
-    fill('experience', get('Experience').map(row).filter(r => r.role).map(r =>
-      `<div class="tl-item"><div class="tl-top"><h4>${esc(r.role)}</h4>${r.dates ? `<span class="date">${esc(r.dates)}</span>` : ''}</div>
+    // Home Items: Section decides where a row goes; rows keep their order inside each section
+    const items = get('Home Items').map(row).filter(r => r.title), sec = n => items.filter(r => r.section.toLowerCase() === n);
+    fill('education', sec('education').map(r =>
+      `<p><strong>${esc(r.title)}</strong>${r.organization ? '<br>' + lines(r.organization) : ''}${r.dates ? `<br><span class="date">${lines(r.dates)}</span>` : ''}</p>`).join(''));
+    fill('experience', sec('experience').map(r =>
+      `<div class="tl-item"><div class="tl-top"><h4>${esc(r.title)}</h4>${r.dates ? `<span class="date">${esc(r.dates)}</span>` : ''}</div>
         ${r.organization ? `<p class="org">${esc(r.organization)}</p>` : ''}${r.description ? paras(r.description) : ''}</div>`).join(''));
-    fill('courses', get('Courses').map(row).filter(r => r.course).map(r => `<li>${esc(r.course)}</li>`).join(''));
-    fill('honors', get('Honors').map(row).filter(r => r.award).map(r =>
-      `<li><strong>${esc(r.award)}</strong>${r.description ? `<br><span>${lines(r.description)}</span>` : ''}</li>`).join(''));
-    fill('service', get('Service').map(row).filter(r => r.role).map(r =>
-      `<li><strong>${esc(r.role)}</strong>${r.detail ? '<br>' + lines(r.detail) : ''}</li>`).join(''));
+    fill('courses', sec('courses').map(r => `<li>${esc(r.title)}</li>`).join(''));
+    fill('honors', sec('honors').map(r =>
+      `<li><strong>${esc(r.title)}</strong>${r.description ? `<br><span>${lines(r.description)}</span>` : ''}</li>`).join(''));
+    fill('service', sec('service').map(r =>
+      `<li><strong>${esc(r.title)}</strong>${r.description ? '<br>' + lines(r.description) : ''}</li>`).join(''));
   };
   const homeReady = () => root.classList.remove('dbwait');
 

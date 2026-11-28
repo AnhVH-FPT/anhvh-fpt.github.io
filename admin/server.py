@@ -32,7 +32,7 @@ DB = os.path.abspath(ARGS.db)
 BACKUPS = os.path.join(HERE, 'backups')
 KEEP_BACKUPS = 60
 GUIDE = 'Hướng dẫn'
-SHEET_ORDER = ['Profile', 'Education', 'Experience', 'Courses', 'Honors', 'Service', 'Research Page',
+SHEET_ORDER = ['Page Text', 'Home Items',
                'Publications', 'Projects', 'Directions', 'Topics', 'Conferences', 'Journals', 'Venue Notes']
 LOCK = threading.Lock()
 

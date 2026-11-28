@@ -85,37 +85,16 @@ const CFG = {
     },
     site: () => 'research.html#venues',
   },
-  Profile: {
-    icon: '👤', group: 'home', desc: 'Các dòng chữ cố định của trang chủ: avatar, tên, câu giới thiệu, About, các dòng introduction. Bấm một dòng để sửa.',
-    key: 'Field', title: r => r.Field, fixed: true, cols: ['Field', 'Value'], required: ['Field'],
-    fields: { Field: {}, Value: { long: 3, wide: 1 } }, site: () => 'index.html',
+  'Page Text': {
+    icon: '🧾', group: 'pages', desc: 'Các dòng chữ cố định của hai trang web. Page = Home (index.html) hoặc Research (research.html). Bấm một dòng để sửa cột Value; dùng ô lọc Page để chỉ xem một trang.',
+    key: null, title: r => r.Page + ' · ' + r.Field, fixed: true, cols: ['Page', 'Field', 'Value'], filters: ['Page'], required: ['Page', 'Field'],
+    fields: { Field: {}, Value: { long: 3, wide: 1 } }, site: r => (r.Page === 'Research' ? 'research.html' : 'index.html'),
   },
-  Education: {
-    icon: '🎓', group: 'home', desc: 'Khung Education trong mục About. Thứ tự dòng = thứ tự hiện.', key: 'Degree', title: r => r.Degree, ordered: true,
-    cols: ['Degree', 'School', 'Details'], required: ['Degree'],
-    fields: { Degree: { wide: 1 }, School: { wide: 1 }, Details: { wide: 1, hint: 'Thời gian, GPA, xếp loại… (hiện chữ nhỏ màu xám).' } }, site: () => 'index.html#about',
-  },
-  Experience: {
-    icon: '💼', group: 'home', desc: 'Cột Academic trong mục Experience (dòng thời gian). Thứ tự dòng = thứ tự hiện, mới nhất để trên cùng.', key: null, title: r => r.Role + (r.Organization ? ' · ' + r.Organization : ''), ordered: true,
-    cols: ['Role', 'Organization', 'Dates'], required: ['Role'],
-    fields: { Organization: { wide: 1 }, Dates: { hint: 'Ví dụ "Sep 2025 – Present".' }, Description: { long: 5, wide: 1, hint: 'Muốn tách đoạn: để một dòng trống giữa hai đoạn.' } }, site: () => 'index.html#experience',
-  },
-  Courses: {
-    icon: '📘', group: 'home', desc: 'Danh sách môn dạy trong mục Experience. Tiêu đề cột sửa ở Profile → Courses heading.', key: 'Course', title: r => r.Course, ordered: true,
-    cols: ['Course'], required: ['Course'], fields: { Course: { wide: 1 } }, site: () => 'index.html#experience',
-  },
-  Honors: {
-    icon: '🏆', group: 'home', desc: 'Honors and awards trong mục Experience. Thứ tự dòng = thứ tự hiện.', key: 'Award', title: r => r.Award, ordered: true,
-    cols: ['Award', 'Description'], required: ['Award'], fields: { Award: { wide: 1 }, Description: { long: 2, wide: 1 } }, site: () => 'index.html#experience',
-  },
-  Service: {
-    icon: '🤝', group: 'home', desc: 'Academic service trong mục Experience (phản biện, ban chương trình…). Thứ tự dòng = thứ tự hiện.', key: null, title: r => r.Role + (r.Detail ? ' · ' + r.Detail : ''), ordered: true,
-    cols: ['Role', 'Detail'], required: ['Role'], fields: { Detail: { long: 2, wide: 1 } }, site: () => 'index.html#experience',
-  },
-  'Research Page': {
-    icon: '🧾', group: 'research', desc: 'Các dòng chữ cố định của trang research.html: phần đầu trang, 3 bước, khung quyền lợi/yêu cầu, các dòng giới thiệu. Bấm một dòng để sửa.',
-    key: 'Field', title: r => r.Field, fixed: true, cols: ['Field', 'Value'], required: ['Field'],
-    fields: { Field: {}, Value: { long: 3, wide: 1 } }, site: () => 'research.html',
+  'Home Items': {
+    icon: '🗂️', group: 'pages', desc: 'Các danh sách trên trang chủ: Education, Experience, Courses, Honors, Service (cột Section). Thứ tự dòng trong cùng một Section = thứ tự hiện trên web.',
+    key: null, title: r => r.Section + ' · ' + r.Title, ordered: true, cols: ['Section', 'Title', 'Organization', 'Dates'], filters: ['Section'], required: ['Section', 'Title'],
+    fields: { Title: { wide: 1 }, Organization: { wide: 1 }, Dates: { wide: 1 }, Description: { long: 4, wide: 1 } },
+    site: r => (r.Section === 'Education' ? 'index.html#about' : 'index.html#experience'),
   },
   'Venue Notes': {
     icon: '📝', desc: 'Ghi chú hiện dưới bảng hội nghị/tạp chí. Thứ tự dòng = thứ tự hiện.', key: null, title: r => (r.Note || '').slice(0, 80), ordered: true,
@@ -157,7 +136,13 @@ const PAGE_HINT = {
   'Contact note': 'Dòng ghi chú nhỏ cuối mục Contact.',
 };
 const MARKUP_HINT = ' Có thể dùng **chữ đậm** và [chữ](link), ví dụ [Contact](#contact).';
-const HOME_SITE = { Profile: 'index.html', Education: 'index.html#about', Experience: 'index.html#experience', Courses: 'index.html#experience', Honors: 'index.html#experience', Service: 'index.html#experience' };
+const ITEM_FIELDS = {
+  Education: { Title: 'Bằng cấp (in đậm), ví dụ "M.S. in Computational Science".', Organization: 'Trường, quốc gia.', Dates: 'Thời gian, GPA, xếp loại (chữ nhỏ màu xám).' },
+  Experience: { Title: 'Chức danh, ví dụ "AI Lecturer".', Organization: 'Đơn vị (chữ xanh).', Dates: 'Thời gian, ví dụ "Sep 2025 – Present".', Description: 'Mô tả công việc. Để một dòng trống để tách đoạn. Công việc mới nhất nên để trên cùng.' },
+  Courses: { Title: 'Tên môn dạy.' },
+  Honors: { Title: 'Tên giải thưởng (in đậm).', Description: 'Mô tả ngắn.' },
+  Service: { Title: 'Vai trò (in đậm), ví dụ "Conference reviewer".', Description: 'Hội nghị/tạp chí, năm.' },
+};
 let IMAGES = [];
 async function loadImages() { try { IMAGES = (await api('/api/images')).images; } catch { IMAGES = []; } }
 
@@ -250,11 +235,15 @@ function checkRow(sheet, r, all) {
     }
     if (r['Paper Status'] === 'Submitted' && !r['Paper Venue']) add('warn', 'Paper Venue', 'Nên ghi nơi đã nộp bài.');
   }
-  if (sheet === 'Profile') {
+  if (sheet === 'Page Text' && r.Page === 'Home') {
     if (r.Field === 'Avatar') {
       if (!r.Value) add('err', 'Value', 'Chưa chọn ảnh: trang chủ sẽ chỉ hiện chữ viết tắt.');
       else if (IMAGES.length && !IMAGES.some(i => i.path === r.Value)) add('err', 'Value', `Không tìm thấy ảnh "${r.Value}" trong thư mục website.`);
     } else if (['Name', 'Headline'].includes(r.Field) && !r.Value) add('warn', 'Value', 'Đang để trống: trang chủ sẽ dùng chữ có sẵn trong index.html.');
+  }
+  if (sheet === 'Home Items' && r.Section && ITEM_FIELDS[r.Section]) {
+    const used = ITEM_FIELDS[r.Section];
+    for (const h of ['Organization', 'Dates', 'Description']) if (r[h] && !used[h]) add('warn', h, `Mục ${r.Section} không dùng cột ${h}: nội dung này sẽ không hiện trên web.`);
   }
   if (sheet === 'Directions' && r.Code && !/^[A-Z0-9]+$/.test(r.Code)) add('err', 'Code', 'Chỉ dùng chữ in hoa và số, không dấu, không khoảng trắng.');
   if (sheet === 'Topics') {
@@ -369,7 +358,7 @@ function renderNav() {
 }
 function groupName(s) {
   const g = cfg(s).group;
-  return g === 'home' ? 'Trang chủ (index.html)' : g === 'research' ? 'Trang research.html' : 'Bài báo, đề tài, nơi đăng';
+  return g === 'pages' ? 'Chữ trên trang web' : 'Bài báo, đề tài, nơi đăng';
 }
 function navItem(s, c) {
   {
@@ -435,12 +424,13 @@ const GUIDE_HTML = `
   <li>Nếu bạn sửa file trong Excel trong lúc công cụ đang mở, công cụ tự tải lại dữ liệu mới. Nếu cùng một dòng vừa bị đổi ở nơi khác, công cụ không ghi đè mà tải lại để bạn kiểm tra.</li>
 </ul></details>
 
-<details><summary>5. Trang chủ và trang research.html: avatar, About, Education, Experience, các dòng chữ…</summary>
+<details><summary>5. Chữ trên trang web: avatar, About, Education, Experience, các dòng giới thiệu…</summary>
 <ul class="steps">
-  <li>Nhóm <b>Trang chủ (index.html)</b> ở cột trái gồm 6 sheet. Sửa xong bấm Lưu, rồi “Xem trên web” để xem ngay.</li>
-  <li><b>Profile</b>: các dòng chữ cố định (không thêm/xóa dòng, chỉ sửa cột Value). <b>Avatar</b>: chọn một ảnh có trong thư mục website, hoặc bấm “Tải ảnh từ máy lên…” (ảnh được chép vào <code>assets/img</code> trong repo, không ghi đè ảnh cũ) → bấm Lưu. Kicker, Name, Headline, Affiliation là phần đầu trang; <b>About</b> là mục About (để một dòng trống để tách đoạn); các dòng <b>Intro: …</b> là dòng giới thiệu dưới mỗi tiêu đề; <b>Join text</b> là đoạn trong khung xanh đậm.</li>
-  <li><b>Education</b>, <b>Experience</b>, <b>Courses</b>, <b>Honors</b>, <b>Service</b>: thêm, sửa, xóa như các sheet khác; thứ tự dòng = thứ tự hiện trên web (dùng ↑ ↓ trong biểu mẫu để đổi). Experience: mới nhất để trên cùng.</li>
-  <li><b>Research Page</b> (nhóm “Trang research.html”): các dòng chữ cố định của trang research.html, cách sửa giống Profile. Có thể dùng <code>**chữ đậm**</code> và <code>[chữ](link)</code>; các mục “… list” ghi mỗi ý một dòng.</li>
+  <li>Nhóm <b>Chữ trên trang web</b> ở cột trái có 2 sheet. Sửa xong bấm Lưu, rồi “Xem trên web” để xem ngay.</li>
+  <li><b>Page Text</b>: mọi dòng chữ cố định của hai trang. Cột <b>Page</b> = Home (trang chủ) hoặc Research (research.html); dùng ô lọc Page để chỉ xem một trang. Không thêm/xóa dòng, chỉ sửa cột Value; mỗi dòng có ghi chú nó hiện ở đâu.
+    <br>• Home: <b>Avatar</b> (chọn ảnh có trong thư mục website hoặc “Tải ảnh từ máy lên…”: ảnh được chép vào <code>assets/img</code>), Kicker / Name / Headline / Affiliation (đầu trang), <b>About</b> (dòng trống để tách đoạn), các dòng Intro: …, Courses heading, Join text.
+    <br>• Research: Kicker / Title / Lead, 3 bước, khung quyền lợi/yêu cầu (các mục “… list”: mỗi ý một dòng), các dòng Intro: …, Contact note. Có thể ghi <code>**chữ đậm**</code> và <code>[chữ](link)</code>.</li>
+  <li><b>Home Items</b>: các danh sách trên trang chủ. Cột <b>Section</b> chọn nơi hiện: Education, Experience, Courses, Honors, Service. Biểu mẫu chỉ hiện các ô mà Section đó dùng. Thứ tự các dòng cùng Section = thứ tự trên web (dùng ↑ ↓ để đổi).</li>
   <li>Khi đưa lên mạng: commit cả <code>data/database.xlsx</code> và ảnh mới trong <code>assets/img</code> (GitHub Desktop tự liệt kê), rồi Push origin.</li>
 </ul></details>
 
@@ -867,6 +857,7 @@ function openEditor(sheet, index, preset) {
     for (const h of S.headers) { const o = S.options[h]; if (Array.isArray(o) && (C.required || []).includes(h)) r[h] = o[0]; }
     if (sheet === 'Topics') { r.Status = 'Open'; const f = ui('Topics').filters.Direction; r.Direction = codes().includes(f) ? f : codes()[0]; }
     if (sheet === 'Conferences') r.Directions = 'All';
+    if (sheet === 'Home Items') { const f = ui('Home Items').filters.Section; if (f) r.Section = f; }
   }
   const title = isNew ? 'Thêm dòng mới' : (C.title(r) || 'Mục số ' + (index + 1));
   $('#dkicker').textContent = sheet + (isNew ? '' : ' · ' + (r._code ? r._code + ' · ' : '') + 'mục số ' + (index + 1));
@@ -932,10 +923,11 @@ function arxivBox(sheet) {
 function profileBox(sheet) {
   if (!cfg(sheet).fixed || !editing || editing.isNew) return;
   const body = $('#dbody'), field = body.querySelector('[data-h="Field"]'), value = body.querySelector('[data-h="Value"]');
-  field.readOnly = true;
-  const box = value.closest('.f'), hint = sheet === 'Profile' ? PROFILE_HINT[field.value] : PAGE_HINT[field.value] && PAGE_HINT[field.value] + MARKUP_HINT;
+  const pageEl = body.querySelector('[data-h="Page"]'), page = pageEl ? pageEl.value : '';
+  field.readOnly = true; if (pageEl) pageEl.disabled = true;
+  const box = value.closest('.f'), hint = page === 'Home' ? PROFILE_HINT[field.value] : PAGE_HINT[field.value] && PAGE_HINT[field.value] + MARKUP_HINT;
   if (hint) box.querySelector('.hint')?.remove(), box.querySelector('.msg').insertAdjacentHTML('beforebegin', `<span class="hint">${esc(hint)}</span>`);
-  if (sheet !== 'Profile' || field.value !== 'Avatar') return;
+  if (page !== 'Home' || field.value !== 'Avatar') return;
   // Avatar: pick a picture that is inside the repository, or upload one (copied into assets/img)
   const input = document.createElement('input'); input.type = 'hidden'; input.dataset.h = 'Value'; input.id = value.id; input.value = value.value;
   value.replaceWith(input);
@@ -960,10 +952,28 @@ function profileBox(sheet) {
   draw();
 }
 
+// Home Items: show only the fields the chosen Section uses, with a hint for each
+function itemsBox(sheet) {
+  if (sheet !== 'Home Items') return;
+  const body = $('#dbody'), sec = body.querySelector('[data-h="Section"]'); if (!sec) return;
+  const sync = () => {
+    const used = ITEM_FIELDS[sec.value] || {};
+    for (const h of ['Title', 'Organization', 'Dates', 'Description']) {
+      const f = body.querySelector(`.f[data-field="${h}"]`); if (!f) continue;
+      const el = f.querySelector('[data-h]');
+      f.hidden = !used[h] && !(el && el.value.trim());
+      let hint = f.querySelector('.hint.sec'); if (!hint) { hint = document.createElement('span'); hint.className = 'hint sec'; f.querySelector('.msg').before(hint); }
+      hint.textContent = used[h] || '';
+    }
+  };
+  sec.addEventListener('change', sync); sync();
+}
+
 function wireForm(sheet) {
   const body = $('#dbody');
   arxivBox(sheet);
   profileBox(sheet);
+  itemsBox(sheet);
   body.querySelectorAll('[data-multi]').forEach(box => box.onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
     const inp = $('#' + box.dataset.multi);
