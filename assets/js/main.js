@@ -57,12 +57,16 @@
   // </semester-helpers>
 
   /* ----- Publications: newest first (Year, Month, Day). By year: 3 latest years open; by type: all open ----- */
+  // Preprints: the venue is always the arXiv record, found in Venue, PDF or DOI (e.g. 2501.01234, arxiv.org/abs/2501.01234v2, 10.48550/arXiv.2501.01234)
+  const arxivId = p => { const m = [p.venue, p.pdf, p.doi].map(txt).join(' ').match(/arxiv[^0-9]{0,12}(\d{4}\.\d{4,5}(?:v\d+)?)/i) || (p.type === 'preprint' && txt(p.venue).match(/^(\d{4}\.\d{4,5}(?:v\d+)?)$/)); return m ? m[1] : ''; };
+  const venueHtml = p => { const id = p.type === 'preprint' && arxivId(p);
+    return id ? `<em>arXiv preprint</em> <a href="https://arxiv.org/abs/${esc(id)}" target="_blank" rel="noopener">arXiv:${esc(id)}</a>` : `<em>${esc(p.venue)}</em>`; };
   const pubCard = p => `<article class="pub" id="pub-${p.id}">
     <span class="pid">[${p.id}]</span>
     <div>
       <h4>${esc(p.title)}</h4>
       <p class="au">${esc(p.authors).split(ME).join(`<strong>${ME}</strong>`)}</p>
-      <p class="ve"><em>${esc(p.venue)}</em>, ${fmtDate(p)}</p>
+      <p class="ve">${venueHtml(p)}, ${fmtDate(p)}</p>
       <div class="pmeta"><span class="ptype">${TYPE_LABEL[p.type]}</span><span class="badge ${p.status}">${STATUS[p.status]}</span>${chip(doiUrl(p.doi), 'DOI')}${chip(p.pdf, 'PDF')}${chip(p.code, 'Code')}</div>
     </div></article>`;
 

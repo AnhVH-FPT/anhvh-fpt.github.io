@@ -120,7 +120,7 @@ table([
     ('Date', 'Có (ít nhất năm)', 'Ngày công bố. Nhập kiểu nào cũng được: dd-mm-yyyy, mm-yyyy, chỉ năm yyyy, hoặc ô ngày của Excel. Bài KHÔNG có năm sẽ bị ẩn khỏi web.', '15-03-2026  hoặc  03-2026  hoặc  2026'),
     ('Title', 'Có', 'Tên bài báo đầy đủ.', 'V-FUSE: Dynamic Gating Fusion ...'),
     ('Authors', 'Có', 'Các tác giả, cách nhau bằng dấu phẩy. Tên "Ha Anh Vu" tự động in đậm.', 'Hien Tran, Ha Anh Vu'),
-    ('Venue', 'Có', 'Tên tạp chí/hội nghị. Có thể ghi ngắn hoặc đầy đủ: web tự nhận ra các cách ghi khác nhau của cùng một hội nghị (ví dụ "RIVF 2026" và "IEEE RIVF").', '20th IEEE-RIVF International Conference ... (RIVF 2026)'),
+    ('Venue', 'Có', 'Với bài Type = Preprint: ghi arXiv ID (ví dụ "arXiv preprint arXiv:2501.01234", hoặc chỉ "2501.01234"); web tự hiện "arXiv preprint arXiv:…" có link tới trang arXiv (ID cũng có thể lấy từ cột PDF hoặc DOI). Database manager tự điền khi bạn dán link arXiv. Các bài khác: Tên tạp chí/hội nghị. Có thể ghi ngắn hoặc đầy đủ: web tự nhận ra các cách ghi khác nhau của cùng một hội nghị (ví dụ "RIVF 2026" và "IEEE RIVF").', '20th IEEE-RIVF International Conference ... (RIVF 2026)'),
     ('DOI', 'Không', 'Mã DOI hoặc link đầy đủ. Để trống thì không hiện nút DOI.', '10.1007/s11760-025-01234-5'),
     ('PDF', 'Không', 'Link file PDF. Để trống thì không hiện nút.', 'https://arxiv.org/pdf/2501.01234'),
     ('Code', 'Không', 'Link mã nguồn (GitHub...). Để trống thì không hiện nút.', 'https://github.com/AnhVH-FPT/...'),
