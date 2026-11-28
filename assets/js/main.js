@@ -28,14 +28,18 @@
     { key: 'journal', label: 'Journal articles', prefix: 'J' },
     { key: 'conference', label: 'Conference proceedings', prefix: 'C' },
     { key: 'thesis', label: 'Thesis', prefix: 'T' },
-    { key: 'submission', label: 'In submission and preprints', prefix: 'S' }
+    { key: 'submission', label: 'In submission', prefix: 'S' },
+    { key: 'preprint', label: 'Preprints', prefix: 'P' }
   ];
-  const STATUS = { published: 'Published', accepted: 'Accepted', submission: 'In Submission', thesis: 'Thesis' };
-  const typeOf = s => { s = txt(s).toLowerCase(); return s[0] === 'j' ? 'journal' : s[0] === 'c' ? 'conference' : s[0] === 't' ? 'thesis' : 'submission'; };
-  const statusOf = s => { s = txt(s).toLowerCase(); return s.includes('accept') ? 'accepted' : s.includes('publish') ? 'published' : s.includes('thesis') ? 'thesis' : 'submission'; };
+  const STATUS = { published: 'Published', accepted: 'Accepted', submission: 'In Submission', preprint: 'Preprint', thesis: 'Thesis' };
+  // Type = kind of paper (an in-submission paper keeps its target kind: Journal or Conference); Status = where it stands
+  const typeOf = s => { s = txt(s).toLowerCase(); return s[0] === 'j' ? 'journal' : s[0] === 'c' ? 'conference' : s[0] === 't' ? 'thesis' : s[0] === 'p' ? 'preprint' : 'other'; };
+  const statusOf = s => { s = txt(s).toLowerCase(); return s.includes('accept') ? 'accepted' : s.includes('publish') ? 'published' : s.includes('thesis') ? 'thesis' : s.includes('preprint') ? 'preprint' : 'submission'; };
+  // "By type" group: anything In Submission goes to "In submission"; preprints (and the old "Submission / Preprint" type) to "Preprints"
+  const groupOf = p => p.status === 'submission' ? 'submission' : p.type === 'preprint' || p.type === 'other' || p.status === 'preprint' ? 'preprint' : p.type;
 
   const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
-  const TYPE_LABEL = { journal: 'Journal', conference: 'Conference', thesis: 'Thesis', submission: 'Submission' };
+  const TYPE_LABEL = { journal: 'Journal', conference: 'Conference', thesis: 'Thesis', preprint: 'Preprint', other: 'Paper' };
 
   // <semester-helpers>
   const SEASONS = { sp: 'Spring', spring: 'Spring', su: 'Summer', summer: 'Summer', fa: 'Fall', fall: 'Fall', autumn: 'Fall' };
@@ -83,7 +87,7 @@
     list.forEach((p, i) => { const r = find(i), k = [...sets[i].full].sort().join(' '); if (!label.has(r) || k < label.get(r)) label.set(r, k); });
     list.forEach((p, i) => { p.vkey = sets[i].full.size ? label.get(find(i)) : 'zz ' + p.title.toLowerCase(); });
   };
-  const STATUS_RANK = { published: 0, thesis: 0, accepted: 1, submission: 2 };   // published first, in submission last
+  const STATUS_RANK = { published: 0, thesis: 0, accepted: 1, preprint: 2, submission: 3 };   // published first, in submission last
   // Order a list of papers: (optionally) by status, then keep the same venue together
   // (venues ordered by their newest paper), then newest first inside a venue.
   const arrange = (items, byStatus) => {
@@ -135,7 +139,7 @@
     const sec = (title, items, open) => `<details class="sem"${open ? ' open' : ''}><summary><span>${title}</span><em>${items.length}</em></summary><div class="plist">${
       items.map(pubCard).join('') || '<p class="empty">Nothing in this group yet.</p>'}</div></details>`;
     const html = pubView === 'type'
-      ? GROUPS.map(g => sec(g.label, arrange(PUBS.filter(p => p.type === g.key), false), true)).join('')
+      ? GROUPS.map(g => [g, PUBS.filter(p => p.group === g.key)]).filter(([, l]) => l.length).map(([g, l]) => sec(g.label, arrange(l, false), true)).join('')   // empty groups hidden
       : [...new Set(PUBS.map(p => p.year))].map((y, i) => sec(y || 'Undated', arrange(PUBS.filter(p => p.year === y), true), i < 3)).join('');
     $('#pubs').innerHTML = html || '<p class="empty">No publications yet.</p>';
     $$('.seg button').forEach(b => b.classList.toggle('on', b.dataset.view === pubView));
@@ -147,9 +151,9 @@
     all.filter(p => !p.year).forEach(p => console.warn('Hidden (no year in the Date column): ' + p.title));
     PUBS = all.filter(p => p.year);
     PUBS.sort((a, b) => b.year - a.year || b.month - a.month || b.day - a.day || a.i - b.i);
-    PUBS.forEach(p => { p.dkey = p.year * 10000 + p.month * 100 + p.day; });
+    PUBS.forEach(p => { p.dkey = p.year * 10000 + p.month * 100 + p.day; p.group = groupOf(p); });
     clusterVenues(PUBS);
-    GROUPS.forEach(g => arrange(PUBS.filter(p => p.type === g.key), false).forEach((p, n) => { p.id = g.prefix + (n + 1); }));
+    GROUPS.forEach(g => arrange(PUBS.filter(p => p.group === g.key), false).forEach((p, n) => { p.id = g.prefix + (n + 1); }));
     drawPubs();
   };
   $$('.seg button').forEach(b => b.addEventListener('click', () => { pubView = b.dataset.view; drawPubs(); }));

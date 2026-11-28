@@ -115,8 +115,8 @@ para('• LƯU Ý: file này công khai trên Internet (ai cũng tải được)
 
 section('3. SHEET "Publications": danh sách bài báo  →  trang chủ, mục Publications')
 table([
-    ('Type', 'Có', 'Loại bài: chọn Journal, Conference, Thesis hoặc Submission / Preprint.', 'Conference'),
-    ('Status', 'Có', 'Tình trạng: Published (đã xuất bản), Accepted (đã được nhận), In Submission (đang nộp/đang phản biện), Thesis (luận văn).', 'Accepted'),
+    ('Type', 'Có', 'Loại bài: chọn Journal, Conference, Thesis hoặc Preprint. Bài đang nộp thì chọn theo nơi nộp (Journal hoặc Conference) và đặt Status = In Submission. Preprint = bài đăng trên arXiv/bioRxiv… chưa nộp hoặc không nộp ở đâu.', 'Conference'),
+    ('Status', 'Có', 'Tình trạng: Published (đã xuất bản), Accepted (đã được nhận), In Submission (đang nộp/đang phản biện), Preprint (bản preprint công khai), Thesis (luận văn). Ở chế độ By type, mọi bài In Submission nằm trong nhóm "In submission" (mã S1, S2…), bài Preprint nằm trong nhóm "Preprints" (mã P1, P2…).', 'Accepted'),
     ('Date', 'Có (ít nhất năm)', 'Ngày công bố. Nhập kiểu nào cũng được: dd-mm-yyyy, mm-yyyy, chỉ năm yyyy, hoặc ô ngày của Excel. Bài KHÔNG có năm sẽ bị ẩn khỏi web.', '15-03-2026  hoặc  03-2026  hoặc  2026'),
     ('Title', 'Có', 'Tên bài báo đầy đủ.', 'V-FUSE: Dynamic Gating Fusion ...'),
     ('Authors', 'Có', 'Các tác giả, cách nhau bằng dấu phẩy. Tên "Ha Anh Vu" tự động in đậm.', 'Hien Tran, Ha Anh Vu'),
@@ -247,7 +247,7 @@ para('Sheet "Venue Notes": mỗi dòng là một ghi chú hiện trong mục "No
 
 section('9. WEBSITE TỰ SẮP XẾP NHƯ THẾ NÀO?', 'Bạn có thể nhập dòng theo bất kỳ thứ tự nào: web luôn tự sắp xếp lại như sau. Bảng dưới là thứ tự MẶC ĐỊNH; người xem còn tự sắp xếp và lọc được (xem cuối mục).')
 table([
-    ('Publications', '', 'Chế độ By year: năm mới nhất lên trước. Trong mỗi năm: Published và Thesis trước, rồi Accepted, rồi In Submission. Các bài cùng một hội nghị/tạp chí được gom cạnh nhau, '
+    ('Publications', '', 'Chế độ By year: năm mới nhất lên trước. Trong mỗi năm: Published và Thesis trước, rồi Accepted, rồi Preprint, rồi In Submission. Các bài cùng một hội nghị/tạp chí được gom cạnh nhau, '
      'trong đó bài mới hơn lên trước; bài trùng ngày và trùng nơi đăng xếp theo tên A→Z. Chế độ By type: chia nhóm Journal, Conference, Thesis, Submission, cũng gom theo nơi đăng.', '3 năm gần nhất mở sẵn, các năm cũ thu gọn'),
     ('Projects', '', 'Học kỳ mới nhất lên trước (năm mới trước; trong một năm: Fall, rồi Summer, rồi Spring). 2 học kỳ mới nhất mở sẵn.', 'Fall 2026 → Summer 2026 → Spring 2026'),
     ('Topics', '', 'Theo thứ tự hướng trong sheet Directions, rồi theo thứ tự dòng trong sheet Topics (cũng chính là số trong mã đề tài).', 'CV-01, CV-02 ... MI-01, MI-02 ...'),

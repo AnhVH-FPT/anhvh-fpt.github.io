@@ -34,7 +34,7 @@ Excel is read in the browser with SheetJS **0.18.5 from cdnjs** (`fetch('data/da
 Excel is the single source of truth: content that lives in the workbook must never be hard-coded in HTML/JS. (index.html keeps static Research-interest cards only as a fallback if the workbook fails to load.) Header in row 1, one record per row, row order does not matter except where noted. Sheets, in this order:
 
 1. **Hướng dẫn**: the only guide sheet, Vietnamese, always first. Never edit it by hand: edit the texts in `tools/build_guide.py` and run `python tools/build_guide.py` (it deletes old guide sheets so there is exactly one). Whenever you change a sheet's columns or how the site reads them, update the guide in the same change.
-2. **Publications**: Type, Status, Date, Title, Authors, Venue, DOI, PDF, Code, Link ID (sorting and venue grouping in main.js; see README).
+2. **Publications**: Type (Journal / Conference / Thesis / Preprint; an in-submission paper keeps its target kind), Status (Published / Accepted / In Submission / Preprint / Thesis; "By type" puts every In Submission paper in its own "In submission" group S1… and preprints in "Preprints" P1…; empty groups are hidden), Date, Title, Authors, Venue, DOI, PDF, Code, Link ID (sorting and venue grouping in main.js; see README).
 3. **Projects**: Semester, Title, Members, Thesis Status, Paper Status, Paper Venue, Link ID.
 4. **Directions**: Code (CV, MI, XAI, EDGE, VLM), Direction (display name), Focus (shown as "Current trends"), Summary (one line on the home page cards). Row order = order of cards, filter buttons and topic groups.
 5. **Topics**: Direction (a code), Status (`Open` / `Taken`), Vietnamese Title, English Title, Dataset, Research Description, Research Expectation.
