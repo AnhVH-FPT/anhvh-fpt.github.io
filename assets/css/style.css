@@ -199,3 +199,6 @@ footer{padding:34px 0;border-top:1px solid var(--line);color:var(--muted);font-s
   .brand{flex:1}
   html{scroll-padding-top:calc(104px + env(safe-area-inset-top,0px))}
 }
+
+/* index.html: texts filled from the workbook stay hidden until it is read (see the script in <head>) */
+.dbwait [data-db]{visibility:hidden}

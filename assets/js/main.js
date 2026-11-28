@@ -215,6 +215,38 @@
     }).join('');
   };
 
+  /* ----- Home-page text (Profile, Education, Experience, Courses, Honors, Service sheets) -----
+     Each element marked data-db="..." in index.html keeps its HTML text as a fallback and is replaced
+     only when the sheet has content, so a missing sheet never empties the page. */
+  const paras = t => txt(t).split(/\n\s*\n/).map(p => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('');
+  const lines = t => esc(t).replace(/\n/g, '<br>');
+  const fill = (key, html) => { const el = $(`[data-db="${key}"]`); if (el && html) el.innerHTML = html; };
+  const renderHome = get => {
+    const prof = {};
+    get('Profile').map(row).forEach(r => { if (r.field) prof[r.field.toLowerCase()] = r.value; });
+    for (const [k, v] of Object.entries(prof)) {
+      if (!v || k === 'avatar' || k === 'about') continue;
+      const el = $(`[data-db="${k}"]`); if (el) el.textContent = v;
+    }
+    if (prof.about) fill('about', paras(prof.about));
+    if (prof.name) { const img = $('[data-db="avatar"]'); if (img) img.alt = 'Portrait of ' + prof.name; }
+    if (prof.avatar) {
+      const img = $('[data-db="avatar"]');
+      if (img && img.getAttribute('src') !== prof.avatar) { img.hidden = false; img.src = prof.avatar; }
+    }
+    fill('education', get('Education').map(row).filter(r => r.degree).map(r =>
+      `<p><strong>${esc(r.degree)}</strong>${r.school ? '<br>' + lines(r.school) : ''}${r.details ? `<br><span class="date">${lines(r.details)}</span>` : ''}</p>`).join(''));
+    fill('experience', get('Experience').map(row).filter(r => r.role).map(r =>
+      `<div class="tl-item"><div class="tl-top"><h4>${esc(r.role)}</h4>${r.dates ? `<span class="date">${esc(r.dates)}</span>` : ''}</div>
+        ${r.organization ? `<p class="org">${esc(r.organization)}</p>` : ''}${r.description ? paras(r.description) : ''}</div>`).join(''));
+    fill('courses', get('Courses').map(row).filter(r => r.course).map(r => `<li>${esc(r.course)}</li>`).join(''));
+    fill('honors', get('Honors').map(row).filter(r => r.award).map(r =>
+      `<li><strong>${esc(r.award)}</strong>${r.description ? `<br><span>${lines(r.description)}</span>` : ''}</li>`).join(''));
+    fill('service', get('Service').map(row).filter(r => r.role).map(r =>
+      `<li><strong>${esc(r.role)}</strong>${r.detail ? '<br>' + lines(r.detail) : ''}</li>`).join(''));
+  };
+  const homeReady = () => root.classList.remove('dbwait');
+
   const showWb = wb => {
     const rows = name => {
       const n = wb.SheetNames.find(s => s.trim().toLowerCase() === name.toLowerCase());
@@ -233,6 +265,8 @@
       }
       return out;
     };
+    try { renderHome(rows); } catch (e) { console.error(e); }
+    homeReady();
     renderPubs(rows('Publications'));
     renderProjects(rows('Projects'));
     renderDirections(rows('Directions'), rows('Topics'));
@@ -260,6 +294,7 @@
       showWb(XLSX.read(await res.arrayBuffer(), { type: 'array', cellNF: true }));
     } catch (err) {
       console.error(err);
+      homeReady();                                                      // keep the fallback texts
       if (location.protocol === 'file:' && window.XLSX) {
         localBar();
         $('#pubs').innerHTML = $('#projects').innerHTML = '<p class="empty">Opened from disk: use the file picker at the bottom of the page to choose data/database.xlsx. On GitHub Pages the data loads automatically.</p>';

@@ -85,6 +85,33 @@ const CFG = {
     },
     site: () => 'research.html#venues',
   },
+  Profile: {
+    icon: '👤', group: 'home', desc: 'Các dòng chữ cố định của trang chủ: avatar, tên, câu giới thiệu, About, các dòng introduction. Bấm một dòng để sửa.',
+    key: 'Field', title: r => r.Field, fixed: true, cols: ['Field', 'Value'], required: ['Field'],
+    fields: { Field: {}, Value: { long: 3, wide: 1 } }, site: () => 'index.html',
+  },
+  Education: {
+    icon: '🎓', group: 'home', desc: 'Khung Education trong mục About. Thứ tự dòng = thứ tự hiện.', key: 'Degree', title: r => r.Degree, ordered: true,
+    cols: ['Degree', 'School', 'Details'], required: ['Degree'],
+    fields: { Degree: { wide: 1 }, School: { wide: 1 }, Details: { wide: 1, hint: 'Thời gian, GPA, xếp loại… (hiện chữ nhỏ màu xám).' } }, site: () => 'index.html#about',
+  },
+  Experience: {
+    icon: '💼', group: 'home', desc: 'Cột Academic trong mục Experience (dòng thời gian). Thứ tự dòng = thứ tự hiện, mới nhất để trên cùng.', key: null, title: r => r.Role + (r.Organization ? ' · ' + r.Organization : ''), ordered: true,
+    cols: ['Role', 'Organization', 'Dates'], required: ['Role'],
+    fields: { Organization: { wide: 1 }, Dates: { hint: 'Ví dụ "Sep 2025 – Present".' }, Description: { long: 5, wide: 1, hint: 'Muốn tách đoạn: để một dòng trống giữa hai đoạn.' } }, site: () => 'index.html#experience',
+  },
+  Courses: {
+    icon: '📘', group: 'home', desc: 'Danh sách môn dạy trong mục Experience. Tiêu đề cột sửa ở Profile → Courses heading.', key: 'Course', title: r => r.Course, ordered: true,
+    cols: ['Course'], required: ['Course'], fields: { Course: { wide: 1 } }, site: () => 'index.html#experience',
+  },
+  Honors: {
+    icon: '🏆', group: 'home', desc: 'Honors and awards trong mục Experience. Thứ tự dòng = thứ tự hiện.', key: 'Award', title: r => r.Award, ordered: true,
+    cols: ['Award', 'Description'], required: ['Award'], fields: { Award: { wide: 1 }, Description: { long: 2, wide: 1 } }, site: () => 'index.html#experience',
+  },
+  Service: {
+    icon: '🤝', group: 'home', desc: 'Academic service trong mục Experience (phản biện, ban chương trình…). Thứ tự dòng = thứ tự hiện.', key: null, title: r => r.Role + (r.Detail ? ' · ' + r.Detail : ''), ordered: true,
+    cols: ['Role', 'Detail'], required: ['Role'], fields: { Detail: { long: 2, wide: 1 } }, site: () => 'index.html#experience',
+  },
   'Venue Notes': {
     icon: '📝', desc: 'Ghi chú hiện dưới bảng hội nghị/tạp chí. Thứ tự dòng = thứ tự hiện.', key: null, title: r => (r.Note || '').slice(0, 80), ordered: true,
     cols: ['Applies To', 'Note'], filters: ['Applies To'], required: ['Applies To', 'Note'],
@@ -92,6 +119,27 @@ const CFG = {
     site: () => 'research.html#venues',
   },
 };
+
+// Home page (index.html): texts in the Profile sheet are fixed fields, one per row
+const PROFILE_HINT = {
+  'Avatar': 'Ảnh đại diện: chọn một ảnh có trong thư mục website, hoặc tải ảnh từ máy lên (ảnh được chép vào assets/img). Nên là ảnh vuông, tối thiểu 480×480 px.',
+  'Kicker': 'Dòng nhỏ màu xanh phía trên tên, ở đầu trang chủ.',
+  'Name': 'Tên hiển thị lớn ở đầu trang chủ.',
+  'Headline': 'Câu giới thiệu dưới tên (đầu trang chủ).',
+  'Affiliation': 'Dòng đơn vị công tác dưới câu giới thiệu.',
+  'About': 'Nội dung mục About. Muốn tách đoạn: để một dòng trống giữa hai đoạn.',
+  'Intro: Research interests': 'Dòng giới thiệu dưới tiêu đề Research interests.',
+  'Intro: Thesis projects': 'Dòng giới thiệu dưới tiêu đề Undergraduate thesis projects.',
+  'Intro: Publications': 'Dòng giới thiệu dưới tiêu đề Publications.',
+  'Intro: Experience': 'Dòng giới thiệu dưới tiêu đề Experience.',
+  'Courses heading': 'Tiêu đề cột danh sách môn dạy trong mục Experience.',
+  'Join text': 'Đoạn chữ trong khung xanh đậm "Join my research group".',
+  'Intro: Contact': 'Dòng giới thiệu dưới tiêu đề Contact.',
+};
+const HOME_SITE = { Profile: 'index.html', Education: 'index.html#about', Experience: 'index.html#experience', Courses: 'index.html#experience', Honors: 'index.html#experience', Service: 'index.html#experience' };
+let IMAGES = [];
+async function loadImages() { try { IMAGES = (await api('/api/images')).images; } catch { IMAGES = []; } }
+
 const cfg = s => CFG[s] || { icon: '▦', desc: '', cols: DB.sheets[s].headers.slice(0, 5), required: [], fields: {}, title: r => Object.values(r)[0] };
 
 /* ------------------------------------------------------------ state */
@@ -180,6 +228,12 @@ function checkRow(sheet, r, all) {
       else if (!linkIds('Publications').some(x => x.toLowerCase() === r['Link ID'].toLowerCase())) add('err', 'Link ID', 'Không có bài báo nào trong Publications có Link ID này.');
     }
     if (r['Paper Status'] === 'Submitted' && !r['Paper Venue']) add('warn', 'Paper Venue', 'Nên ghi nơi đã nộp bài.');
+  }
+  if (sheet === 'Profile') {
+    if (r.Field === 'Avatar') {
+      if (!r.Value) add('err', 'Value', 'Chưa chọn ảnh: trang chủ sẽ chỉ hiện chữ viết tắt.');
+      else if (IMAGES.length && !IMAGES.some(i => i.path === r.Value)) add('err', 'Value', `Không tìm thấy ảnh "${r.Value}" trong thư mục website.`);
+    } else if (['Name', 'Headline'].includes(r.Field) && !r.Value) add('warn', 'Value', 'Đang để trống: trang chủ sẽ dùng chữ có sẵn trong index.html.');
   }
   if (sheet === 'Directions' && r.Code && !/^[A-Z0-9]+$/.test(r.Code)) add('err', 'Code', 'Chỉ dùng chữ in hoa và số, không dấu, không khoảng trắng.');
   if (sheet === 'Topics') {
@@ -286,10 +340,16 @@ function renderNav() {
   const count = s => iss[s].reduce((n, a) => n + (a.some(x => x.level === 'err') ? 1 : 0), 0);
   const total = DB.order.reduce((n, s) => n + count(s), 0);
   $('#nav').innerHTML = `<a href="#overview" class="${view === 'overview' ? 'on' : ''}"><span>◈</span> Tổng quan ${total ? `<span class="bad">${total}</span>` : ''}</a>
-    <div class="grp">Sheets</div>` + DB.order.map(s => {
-    const c = count(s);
-    return `<a href="#${encodeURIComponent(s)}" class="${view === s ? 'on' : ''}"><span>${cfg(s).icon}</span> ${esc(s)}${c ? `<span class="bad" title="${c} dòng có lỗi">${c}</span>` : ''}<span class="n">${rowsOf(s).length}</span></a>`;
+    ` + DB.order.map((s, k) => {
+    const c = count(s), g = cfg(s).group === 'home' ? 'Trang chủ (index.html)' : 'Bài báo, đề tài, nơi đăng';
+    const head = k === 0 || (cfg(DB.order[k - 1]).group === 'home' ? 'Trang chủ (index.html)' : 'Bài báo, đề tài, nơi đăng') !== g ? `<div class="grp">${g}</div>` : '';
+    return head + navItem(s, c);
   }).join('');
+}
+function navItem(s, c) {
+  {
+    return `<a href="#${encodeURIComponent(s)}" class="${view === s ? 'on' : ''}"><span>${cfg(s).icon}</span> ${esc(s)}${c ? `<span class="bad" title="${c} dòng có lỗi">${c}</span>` : ''}<span class="n">${rowsOf(s).length}</span></a>`;
+  }
 }
 
 function render() {
@@ -302,8 +362,8 @@ function render() {
   const C = cfg(view);
   $('#title').textContent = view; $('#subtitle').textContent = C.desc;
   top.innerHTML = `<a class="btn" target="_blank" rel="noopener" href="/site/${esc(C.site ? C.site({}).replace(/#.*/, '') : 'index.html')}">Xem trên web ↗</a>
-    <button class="btn primary" type="button" id="addbtn">＋ Thêm dòng</button>`;
-  $('#addbtn').onclick = () => openEditor(view, null);
+    ${C.fixed ? '' : '<button class="btn primary" type="button" id="addbtn">＋ Thêm dòng</button>'}`;
+  if ($('#addbtn')) $('#addbtn').onclick = () => openEditor(view, null);
   renderSheet();
 }
 
@@ -350,18 +410,26 @@ const GUIDE_HTML = `
   <li>Nếu bạn sửa file trong Excel trong lúc công cụ đang mở, công cụ tự tải lại dữ liệu mới. Nếu cùng một dòng vừa bị đổi ở nơi khác, công cụ không ghi đè mà tải lại để bạn kiểm tra.</li>
 </ul></details>
 
-<details><summary>5. Publications (bài báo)</summary>
+<details><summary>5. Trang chủ: avatar, About, Education, Experience…</summary>
+<ul class="steps">
+  <li>Nhóm <b>Trang chủ (index.html)</b> ở cột trái gồm 6 sheet. Sửa xong bấm Lưu, rồi “Xem trên web” để xem ngay.</li>
+  <li><b>Profile</b>: các dòng chữ cố định (không thêm/xóa dòng, chỉ sửa cột Value). <b>Avatar</b>: chọn một ảnh có trong thư mục website, hoặc bấm “Tải ảnh từ máy lên…” (ảnh được chép vào <code>assets/img</code> trong repo, không ghi đè ảnh cũ) → bấm Lưu. Kicker, Name, Headline, Affiliation là phần đầu trang; <b>About</b> là mục About (để một dòng trống để tách đoạn); các dòng <b>Intro: …</b> là dòng giới thiệu dưới mỗi tiêu đề; <b>Join text</b> là đoạn trong khung xanh đậm.</li>
+  <li><b>Education</b>, <b>Experience</b>, <b>Courses</b>, <b>Honors</b>, <b>Service</b>: thêm, sửa, xóa như các sheet khác; thứ tự dòng = thứ tự hiện trên web (dùng ↑ ↓ trong biểu mẫu để đổi). Experience: mới nhất để trên cùng.</li>
+  <li>Khi đưa lên mạng: commit cả <code>data/database.xlsx</code> và ảnh mới trong <code>assets/img</code> (GitHub Desktop tự liệt kê), rồi Push origin.</li>
+</ul></details>
+
+<details><summary>6. Publications (bài báo)</summary>
 <ul class="steps">
   <li><b>Type</b>: Journal, Conference, Thesis, Preprint. <b>Status</b>: Published, Accepted, In Submission, Preprint, Thesis.</li>
   <li><b>Bài đang nộp/phản biện:</b> Type = nơi nộp (Journal hoặc Conference), Status = In Submission. Trên web nằm ở nhóm “In submission” (S1, S2…).</li>
   <li><b>Preprint (arXiv):</b> chọn Type = Preprint → ô “arXiv ID hoặc link” hiện ra → dán link arXiv: Venue, PDF, DOI tự điền. Bấm “Lấy tên bài, tác giả, ngày từ arXiv” để điền nốt các ô còn trống. Web hiện “arXiv preprint arXiv:…” có link, nhóm “Preprints” (P1, P2…).</li>
   <li><b>Date:</b> dd-mm-yyyy, mm-yyyy hoặc chỉ yyyy. Bài không có năm sẽ bị ẩn khỏi web.</li>
   <li><b>Authors:</b> cách nhau bằng dấu phẩy; “Ha Anh Vu” tự in đậm.</li>
-  <li><b>Link ID:</b> mã ngắn (ví dụ AC1) để nối bài báo với đề tài luận văn trong Projects (xem mục 6).</li>
+  <li><b>Link ID:</b> mã ngắn (ví dụ AC1) để nối bài báo với đề tài luận văn trong Projects (xem mục 7).</li>
   <li>Web tự sắp xếp (mới nhất trước) và gom các bài cùng hội nghị; bạn không cần sắp thứ tự dòng.</li>
 </ul></details>
 
-<details><summary>6. Projects (đề tài luận văn đang hướng dẫn)</summary>
+<details><summary>7. Projects (đề tài luận văn đang hướng dẫn)</summary>
 <ul class="steps">
   <li><b>Semester:</b> Fall/Summer/Spring + năm (Fall 2026) hoặc FA26, SU26, SP26. Web tự xếp học kỳ mới nhất lên trước.</li>
   <li><b>Members:</b> tên sinh viên cách nhau bằng dấu chấm phẩy (;).</li>
@@ -369,7 +437,7 @@ const GUIDE_HTML = `
   <li><b>Paper Status:</b> None, Submitted (ghi thêm Paper Venue), Accepted. Khi Accepted: thêm bài vào Publications, đặt <b>cùng một Link ID</b> ở cả hai dòng; web hiện “Accepted, see C1” và bấm vào sẽ nhảy tới bài báo. Công cụ báo lỗi nếu Link ID không khớp.</li>
 </ul></details>
 
-<details><summary>7. Directions (hướng nghiên cứu)</summary>
+<details><summary>8. Directions (hướng nghiên cứu)</summary>
 <ul class="steps">
   <li>Thứ tự dòng = thứ tự thẻ Research interests, nút lọc và nhóm đề tài. Mở một hướng → nút ↑ ↓ để đổi thứ tự.</li>
   <li><b>Code</b> viết hoa, không dấu (CV, MI…). <b>Đổi mã</b> trong công cụ sẽ tự cập nhật mọi đề tài, hội nghị, tạp chí dùng mã đó (mã đề tài trên web đổi theo, ví dụ CV-01 → CVX-01).</li>
@@ -377,7 +445,7 @@ const GUIDE_HTML = `
   <li>Không nên xóa hướng còn đề tài: các đề tài đó sẽ thành một nhóm lạ trên web.</li>
 </ul></details>
 
-<details><summary>8. Topics (đề tài cho sinh viên)</summary>
+<details><summary>9. Topics (đề tài cho sinh viên)</summary>
 <ul class="steps">
   <li><b>Mã đề tài</b> (CV-01, MI-07…) do web tự đánh theo vị trí dòng trong hướng. Vì vậy: <b>thêm đề tài mới vào cuối</b>, và khi có người nhận thì <b>đặt Status = Taken</b> (nút “Đánh dấu Taken”) thay vì xóa; xóa sẽ làm đổi mã các đề tài phía dưới. Biểu mẫu hiện trước mã mà đề tài sẽ có.</li>
   <li>Đề tài Taken không hiện trong danh sách chính, chỉ trong mục “Taken” trên web.</li>
@@ -387,7 +455,7 @@ const GUIDE_HTML = `
   <li>Các bước hoặc kết quả đánh số: xuống dòng sau dấu hai chấm, mỗi ý một dòng bắt đầu bằng (1), (2), (3)…</li>
 </ul></details>
 
-<details><summary>9. Conferences (hội nghị)</summary>
+<details><summary>10. Conferences (hội nghị)</summary>
 <ul class="steps">
   <li>Chỉ thêm hội nghị có kỷ yếu được <b>Scopus</b> index; ghi nơi xuất bản ở Proceedings (cột này dùng cho ô tìm kiếm trên web). Công cụ cảnh báo hội nghị có dấu hiệu WASET.</li>
   <li><b>CORE Rank:</b> theo bảng ICORE2026 (portal.core.edu.au); không có hạng A*–C thì chọn Not ranked.</li>
@@ -398,7 +466,7 @@ const GUIDE_HTML = `
   <li><b>Registration Fee:</b> mỗi mức một dòng, dùng nút điền nhanh: “Regular: ≈USD 900” và “Student: ≈USD 600”. Có ≈ = ước lượng; không có ≈ = số đọc từ trang đăng ký.</li>
 </ul></details>
 
-<details><summary>10. Journals (tạp chí)</summary>
+<details><summary>11. Journals (tạp chí)</summary>
 <ul class="steps">
   <li>Công cụ đối chiếu tên tạp chí, nhà xuất bản và tên miền với hai danh sách săn mồi trong <code>admin\\predatory</code> (có danh sách mới thì thay hai file ở đó, giữ nguyên tên file) và báo lỗi nếu trùng. Đừng lưu tạp chí bị báo lỗi này.</li>
   <li><b>Rank:</b> Q1–Q4 theo SCImago.</li>
@@ -406,17 +474,17 @@ const GUIDE_HTML = `
   <li><b>Publication Fee:</b> mỗi cách đăng một dòng: “Free (subscription)” (hybrid, đăng miễn phí), “Free” (open access không thu phí), “Open access: USD 3,270” (phí APC). Tạp chí hybrid ghi cả hai dòng.</li>
 </ul></details>
 
-<details><summary>11. Venue Notes</summary>
+<details><summary>12. Venue Notes</summary>
 <ul class="steps">
   <li>Ghi chú hiện dưới bảng hội nghị/tạp chí. Applies To = Conferences, Journals hoặc All. Thứ tự dòng = thứ tự hiện; dùng ↑ ↓ để đổi.</li>
 </ul></details>
 
-<details><summary>12. Phím tắt</summary>
+<details><summary>13. Phím tắt</summary>
 <ul class="steps">
   <li><kbd>/</kbd> tìm kiếm · <kbd>Ctrl</kbd> + <kbd>S</kbd> lưu biểu mẫu · <kbd>Esc</kbd> đóng biểu mẫu/hộp thoại · <kbd>Shift</kbd> + bấm tiêu đề cột: thêm tầng sắp xếp.</li>
 </ul></details>
 
-<details><summary>13. Khi gặp sự cố</summary>
+<details><summary>14. Khi gặp sự cố</summary>
 <ul class="steps">
   <li><b>“Không ghi được file … đang mở trong Excel”:</b> đóng Excel (lưu hoặc bỏ thay đổi trong Excel) rồi bấm Lưu lại.</li>
   <li><b>“Mất kết nối”:</b> cửa sổ đen đã bị đóng. Nhấp đúp lại file .bat rồi tải lại trang.</li>
@@ -784,9 +852,9 @@ function openEditor(sheet, index, preset) {
     <button class="btn" type="button" id="dcancel">Hủy</button><span class="sp"></span>
     ${!isNew && C.ordered ? `<button class="btn sm" type="button" id="dup" title="Chuyển lên một dòng" ${index === 0 ? 'disabled' : ''}>↑</button><button class="btn sm" type="button" id="ddown" title="Chuyển xuống một dòng" ${index === S.rows.length - 1 ? 'disabled' : ''}>↓</button>` : ''}
     ${site ? `<a class="btn sm" target="_blank" rel="noopener" href="/site/${esc(site)}">Xem trên web ↗</a>` : ''}
-    ${!isNew ? `<button class="btn sm" type="button" id="dcopy">Nhân bản</button>` : ''}
+    ${!isNew && !C.fixed ? `<button class="btn sm" type="button" id="dcopy">Nhân bản</button>` : ''}
     ${!isNew && sheet === 'Topics' ? `<button class="btn sm" type="button" id="dtaken">${r.Status === 'Taken' ? 'Mở lại (Open)' : 'Đánh dấu Taken'}</button>` : ''}
-    ${!isNew ? `<button class="btn sm danger" type="button" id="ddel">Xóa</button>` : ''}`;
+    ${!isNew && !C.fixed ? `<button class="btn sm danger" type="button" id="ddel">Xóa</button>` : ''}`;
   wireForm(sheet);
   dirty = false;
   $('#drawer').classList.add('open'); $('#drawer').setAttribute('aria-hidden', 'false'); $('#scrim').hidden = false;
@@ -835,9 +903,41 @@ function arxivBox(sheet) {
   sync();
 }
 
+function profileBox(sheet) {
+  if (sheet !== 'Profile' || !editing || editing.isNew) return;
+  const body = $('#dbody'), field = body.querySelector('[data-h="Field"]'), value = body.querySelector('[data-h="Value"]');
+  field.readOnly = true;
+  const box = value.closest('.f'), hint = PROFILE_HINT[field.value];
+  if (hint) box.querySelector('.hint')?.remove(), box.querySelector('.msg').insertAdjacentHTML('beforebegin', `<span class="hint">${esc(hint)}</span>`);
+  if (field.value !== 'Avatar') return;
+  // Avatar: pick a picture that is inside the repository, or upload one (copied into assets/img)
+  const input = document.createElement('input'); input.type = 'hidden'; input.dataset.h = 'Value'; input.id = value.id; input.value = value.value;
+  value.replaceWith(input);
+  const pick = document.createElement('div'); pick.className = 'imgpick';
+  box.querySelector('.hint').before(pick);
+  const draw = () => {
+    pick.innerHTML = `<div class="imgcur"><img src="/site/${esc(input.value)}?t=${Date.now()}" alt="" onerror="this.style.visibility='hidden'"><div><b>Đang dùng:</b> <code>${esc(input.value || '(chưa chọn)')}</code>
+        <div class="imgbtns"><label class="btn sm">Tải ảnh từ máy lên…<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><button type="button" class="btn sm" data-reload>Làm mới danh sách</button></div></div></div>
+      <div class="imggrid">${IMAGES.filter(i => !/favicon/i.test(i.path)).map(i => `<button type="button" class="${i.path === input.value ? 'on' : ''}" data-img="${esc(i.path)}" title="${esc(i.path)}"><img src="/site/${esc(i.path)}" alt="" loading="lazy"><span>${esc(i.path.split('/').pop())}</span></button>`).join('') || '<p class="hint">Chưa có ảnh nào trong thư mục website.</p>'}</div>`;
+    pick.querySelectorAll('[data-img]').forEach(b => b.onclick = () => { input.value = b.dataset.img; changed(); draw(); });
+    pick.querySelector('[data-reload]').onclick = async () => { await loadImages(); draw(); };
+    pick.querySelector('input[type=file]').onchange = async e => {
+      const f = e.target.files[0]; if (!f) return;
+      const data = await new Promise(res => { const rd = new FileReader(); rd.onload = () => res(rd.result); rd.readAsDataURL(f); });
+      try {
+        const r = await api('/api/upload-image', { name: f.name, data });
+        await loadImages(); input.value = r.path; changed(); draw();
+        toast('Đã chép ảnh vào ' + r.path + '. Bấm Lưu để dùng làm avatar.', 'ok');
+      } catch (err) { toast(err.message, 'err'); }
+    };
+  };
+  draw();
+}
+
 function wireForm(sheet) {
   const body = $('#dbody');
   arxivBox(sheet);
+  profileBox(sheet);
   body.querySelectorAll('[data-multi]').forEach(box => box.onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
     const inp = $('#' + box.dataset.multi);
@@ -1048,6 +1148,7 @@ setInterval(async () => {
 
 (async () => {
   try {
+    await loadImages();
     await reload();
     route();
     try { PRED = await api('/api/predatory'); if (PRED.journals.length) { ISSUES = null; renderNav(); if (view === 'overview' || view === 'Journals') render(); } } catch { }

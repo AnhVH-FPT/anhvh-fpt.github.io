@@ -57,6 +57,10 @@ python3 -m http.server 8000   # then visit http://localhost:8000
 - **Prospective students section**: the text in `#join` is a draft. Edit the topics, benefits and requirements to match your group.
 - **Custom domain** (optional): add a `CNAME` file containing your domain, then set the domain in Settings, then Pages.
 
+## Edit the home page texts
+
+Avatar, name, headline, About, Education, Experience, courses, honors, academic service and the one-line introductions under each heading are stored in the workbook (sheets **Profile**, **Education**, **Experience**, **Courses**, **Honors**, **Service**). Edit them in the database manager (group "Trang chủ"); for the avatar choose a picture already in the repository or upload one (it is copied into `assets/img/`). Commit the workbook and any new picture together.
+
 ## Update publications and projects (Excel)
 
 **Easiest way: the database manager.** Double-click `admin\Open database manager.bat` (it is in the repository but not published on the website, see `_config.yml`). It starts a small local server (`python admin/server.py`, needs `openpyxl`) and opens `http://localhost:8765/`: every sheet as a searchable, filterable table, a form to add/edit/duplicate/delete rows, data checks (missing fields, topic template, unknown direction codes, predatory journals), and each Save writes straight into `data/database.xlsx` (Excel must be closed). Backups of the previous file are kept in `admin/backups/` and "Undo" restores them. "Xem website" previews the site with the current workbook. Then commit and push with GitHub Desktop as usual.

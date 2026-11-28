@@ -32,7 +32,8 @@ DB = os.path.abspath(ARGS.db)
 BACKUPS = os.path.join(HERE, 'backups')
 KEEP_BACKUPS = 60
 GUIDE = 'Hướng dẫn'
-SHEET_ORDER = ['Publications', 'Projects', 'Directions', 'Topics', 'Conferences', 'Journals', 'Venue Notes']
+SHEET_ORDER = ['Profile', 'Education', 'Experience', 'Courses', 'Honors', 'Service',
+               'Publications', 'Projects', 'Directions', 'Topics', 'Conferences', 'Journals', 'Venue Notes']
 LOCK = threading.Lock()
 
 
@@ -331,6 +332,41 @@ def predatory_lists():
 PRED = None
 
 
+# ---------------------------------------------------------------- pictures inside the repository (avatar)
+IMG_EXT = ('.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg')
+SKIP_DIRS = {'.git', 'admin', '.claude', 'node_modules', 'tools', 'data'}
+
+
+def list_images():
+    out = []
+    for dirpath, dirnames, files in os.walk(SITE):
+        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS and not d.startswith('.')]
+        for f in files:
+            if f.lower().endswith(IMG_EXT):
+                full = os.path.join(dirpath, f)
+                out.append({'path': os.path.relpath(full, SITE).replace(os.sep, '/'), 'size': os.path.getsize(full)})
+    return sorted(out, key=lambda x: x['path'])
+
+
+def upload_image(body):
+    import base64
+    name = os.path.basename(str(body.get('name') or 'image.png'))
+    stem, ext = os.path.splitext(name)
+    ext = ext.lower()
+    if ext not in IMG_EXT or ext == '.svg': raise UserError('Chỉ nhận ảnh PNG, JPG, WEBP hoặc GIF.')
+    data = str(body.get('data') or '')
+    if ',' in data: data = data.split(',', 1)[1]                  # data:image/png;base64,....
+    raw = base64.b64decode(data)
+    if len(raw) > 8 * 1024 * 1024: raise UserError('Ảnh lớn hơn 8 MB. Hãy thu nhỏ ảnh (khoảng 800×800 px là đủ cho avatar).')
+    stem = re.sub(r'[^A-Za-z0-9_-]+', '-', unicodedata.normalize('NFKD', stem).encode('ascii', 'ignore').decode()).strip('-').lower() or 'image'
+    folder = os.path.join(SITE, 'assets', 'img'); os.makedirs(folder, exist_ok=True)
+    target, n = os.path.join(folder, stem + ext), 2
+    while os.path.exists(target):                                  # never overwrite a picture already in the repo
+        target = os.path.join(folder, f'{stem}-{n}{ext}'); n += 1
+    with open(target, 'wb') as f: f.write(raw)
+    return {'ok': True, 'path': os.path.relpath(target, SITE).replace(os.sep, '/')}
+
+
 # ---------------------------------------------------------------- arXiv lookup (for Preprint rows)
 def arxiv_lookup(aid):
     import urllib.request, xml.etree.ElementTree as ET
@@ -383,6 +419,7 @@ class H(BaseHTTPRequestHandler):
                 global PRED
                 if PRED is None: PRED = predatory_lists()
                 return self.send(200, PRED)
+            if path == '/api/images': return self.send(200, {'images': list_images()})
             if path == '/api/arxiv':
                 from urllib.parse import parse_qs
                 return self.send(200, arxiv_lookup((parse_qs(urlparse(self.path).query).get('id') or [''])[0]))
@@ -406,6 +443,7 @@ class H(BaseHTTPRequestHandler):
             body = json.loads(self.rfile.read(int(self.headers.get('Content-Length') or 0)) or b'{}')
             if path == '/api/op': return self.send(200, apply_op(body))
             if path == '/api/undo': return self.send(200, undo())
+            if path == '/api/upload-image': return self.send(200, upload_image(body))
             self.send(404, {'error': 'Not found'})
         except UserError as e:
             self.send(e.status, {'error': str(e)})

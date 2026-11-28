@@ -15,7 +15,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css?v=13">
+<link rel="stylesheet" href="assets/css/style.css?v=14">
+<!-- Home-page texts come from data/database.xlsx: hide them until it is read (max 3 s) so old text does not flash -->
+<script>document.documentElement.classList.add('dbwait');setTimeout(function(){document.documentElement.classList.remove('dbwait')},3000);</script>
 </head>
 <body>
 
@@ -39,10 +41,10 @@
   <canvas id="net" aria-hidden="true"></canvas>
   <div class="wrap hero-in">
     <div>
-      <p class="kicker">AI Lecturer, FPT University</p>
-      <h1>Ha Anh Vu</h1>
-      <p class="lead">AI lecturer and researcher building robust, interpretable and trustworthy machine learning for high-stakes, real-world applications.</p>
-      <p class="where">Artificial Intelligence Department, FPT University, Ho Chi Minh City, Vietnam</p>
+      <p class="kicker" data-db="kicker">AI Lecturer, FPT University</p>
+      <h1 data-db="name">Ha Anh Vu</h1>
+      <p class="lead" data-db="headline">AI lecturer and researcher building robust, interpretable and trustworthy machine learning for high-stakes, real-world applications.</p>
+      <p class="where" data-db="affiliation">Artificial Intelligence Department, FPT University, Ho Chi Minh City, Vietnam</p>
       <div class="links">
         <a class="btn pri" href="research.html">Join my research group</a>
         <a class="btn" href="mailto:AnhVH54@fe.edu.vn">Email</a>
@@ -51,10 +53,10 @@
         <a class="btn" href="https://github.com/AnhVH-FPT" target="_blank" rel="noopener">GitHub</a>
       </div>
     </div>
-    <!-- AVATAR: assets/img/avatar.png (square, at least 480x480 px). The initials show only if the image fails to load. -->
+    <!-- AVATAR: set in the Profile sheet (Avatar = a picture inside the repository, square, at least 480x480 px). The initials show only if the image fails to load. -->
     <div class="avatar">
       <span>HV</span>
-      <img src="assets/img/avatar.png" alt="Portrait of Ha Anh Vu" onerror="this.remove()">
+      <img src="assets/img/avatar.png" alt="Portrait of Ha Anh Vu" data-db="avatar" onerror="this.hidden=true">
     </div>
   </div>
 </section>
@@ -63,19 +65,19 @@
 <section id="about"><div class="wrap about">
   <div>
     <h2>About</h2>
-    <p>I am an AI Lecturer at FPT University, Ho Chi Minh City, with an M.S. in Computational Science from Central Washington University. My research builds robust, interpretable machine learning models for high-stakes, real-world applications, with a focus on medical imaging and computer vision.</p>
+    <div data-db="about"><p>I am an AI Lecturer at FPT University, Ho Chi Minh City, with an M.S. in Computational Science from Central Washington University. My research builds robust, interpretable machine learning models for high-stakes, real-world applications, with a focus on medical imaging and computer vision.</p></div>
   </div>
   <aside class="edu">
     <h3>Education</h3>
-    <p><strong>M.S. in Computational Science</strong><br>Central Washington University, USA<br><span class="date">Sep 2023 – Mar 2025, GPA 3.95/4.00, first-class honors</span></p>
-    <p><strong>B.Eng. in Computer Network and Data Communication</strong><br>University of Information Technology, VNU-HCM, Vietnam<br><span class="date">Aug 2017 – Mar 2022</span></p>
+    <div data-db="education"><p><strong>M.S. in Computational Science</strong><br>Central Washington University, USA<br><span class="date">Sep 2023 – Mar 2025, GPA 3.95/4.00, first-class honors</span></p>
+    <p><strong>B.Eng. in Computer Network and Data Communication</strong><br>University of Information Technology, VNU-HCM, Vietnam<br><span class="date">Aug 2017 – Mar 2022</span></p></div>
   </aside>
 </div></section>
 
 <!-- ================= RESEARCH (filled from the Directions sheet of data/database.xlsx; the cards below are the fallback) ================= -->
 <section id="research" class="alt"><div class="wrap">
   <h2>Research interests</h2>
-  <p class="intro">Five directions my group works on. Click one to see its open thesis topics.</p>
+  <p class="intro" data-db="intro: research interests">Five directions my group works on. Click one to see its open thesis topics.</p>
   <div class="dgrid" id="dirgrid">
     <a class="ditem" href="research.html?dir=CV#topics"><span class="dcode">CV</span><h3>Computer Vision &amp; Image Processing</h3><p>Detection, segmentation and restoration for real-world images and video.</p></a>
     <a class="ditem" href="research.html?dir=MI#topics"><span class="dcode">MI</span><h3>Medical Imaging</h3><p>Deep learning for diagnosis and segmentation of medical scans.</p></a>
@@ -88,14 +90,14 @@
 <!-- ================= SUPERVISION (rendered by assets/js/main.js) ================= -->
 <section id="supervision"><div class="wrap">
   <h2>Undergraduate thesis projects</h2>
-  <p class="intro">Graduation theses I supervise at FPT University, listed by semester. Click a semester to expand or collapse it.</p>
+  <p class="intro" data-db="intro: thesis projects">Graduation theses I supervise at FPT University, listed by semester. Click a semester to expand or collapse it.</p>
   <div id="projects"></div>
 </div></section>
 
 <!-- ================= PUBLICATIONS (rendered by assets/js/main.js) ================= -->
 <section id="publications" class="alt"><div class="wrap">
   <h2>Publications</h2>
-  <p class="intro">Papers with my students and collaborators, newest first. Switch between grouping by year and by type.</p>
+  <p class="intro" data-db="intro: publications">Papers with my students and collaborators, newest first. Switch between grouping by year and by type.</p>
   <div class="seg" role="group" aria-label="Group publications by"><button type="button" data-view="year">By year</button><button type="button" data-view="type">By type</button></div>
   <div id="pubs"></div>
   <p><a href="https://scholar.google.com/citations?user=z_W_F0oAAAAJ&hl=en" target="_blank" rel="noopener">See the full list on Google Scholar</a></p>
@@ -104,11 +106,11 @@
 <!-- ================= EXPERIENCE ================= -->
 <section id="experience"><div class="wrap">
   <h2>Experience</h2>
-  <p class="intro">Teaching, research and service.</p>
+  <p class="intro" data-db="intro: experience">Teaching, research and service.</p>
   <div class="two">
     <div>
       <h3>Academic</h3>
-      <div class="tl">
+      <div class="tl" data-db="experience">
         <div class="tl-item"><div class="tl-top"><h4>AI Lecturer</h4><span class="date">Sep 2025 – Present</span></div>
           <p class="org">Artificial Intelligence Department, FPT University</p>
           <p>Teach undergraduate courses in machine learning, deep learning and data science, covering lectures, hands-on labs, projects and assessment. Lead a student research group: propose research topics, supervise undergraduate theses, and guide students from the first idea to papers at international conferences and journals. Coach student teams for AI competitions.</p></div>
@@ -118,8 +120,8 @@
       </div>
     </div>
     <div>
-      <h3>Courses taught at FPT University</h3>
-      <ul class="courses">
+      <h3 data-db="courses heading">Courses taught at FPT University</h3>
+      <ul class="courses" data-db="courses">
         <li>Machine Learning</li>
         <li>Deep Learning</li>
         <li>AI Application Development with TensorFlow</li>
@@ -131,7 +133,7 @@
   <div class="two spaced">
     <div>
       <h3>Honors and awards</h3>
-      <ul class="plain">
+      <ul class="plain" data-db="honors">
         <li><strong>Teaching Excellence Award, FPT University</strong><br><span>A 4.0/4.0 lecturer rating in student evaluations across all teaching semesters.</span></li>
         <li><strong>International Graduate Student Scholarship, Central Washington University</strong><br><span>Awarded for five consecutive quarters to top international graduate students in the School of Science.</span></li>
         <li><strong>Outstanding Young Leader Award, University of Information Technology</strong><br><span>For leadership and mentoring of incoming students in the Youth Union.</span></li>
@@ -139,7 +141,7 @@
     </div>
     <div>
       <h3>Academic service</h3>
-      <ul class="plain">
+      <ul class="plain" data-db="service">
         <li><strong>Conference reviewer</strong><br>20th IEEE-RIVF International Conference on Computing and Communication Technologies (RIVF 2026)</li>
       </ul>
     </div>
@@ -150,7 +152,7 @@
 <section id="join"><div class="wrap"><div class="panel cta">
   <div>
     <h2>Join my research group</h2>
-    <p class="lead">I am looking for motivated students who want to do real AI research. Browse about 250 open topics in computer vision, medical imaging, explainable AI, edge AI and vision language models, then apply for the one you like.</p>
+    <p class="lead" data-db="join text">I am looking for motivated students who want to do real AI research. Browse about 250 open topics in computer vision, medical imaging, explainable AI, edge AI and vision language models, then apply for the one you like.</p>
   </div>
   <a class="btn light" href="research.html">Browse research topics</a>
 </div></div></section>
@@ -158,7 +160,7 @@
 <!-- ================= CONTACT ================= -->
 <section id="contact" class="contact alt"><div class="wrap">
   <h2>Contact</h2>
-  <p class="intro">Questions about a topic or about joining the group? Email me or message me on Zalo.</p>
+  <p class="intro" data-db="intro: contact">Questions about a topic or about joining the group? Email me or message me on Zalo.</p>
   <ul class="clist">
     <li><span class="clabel"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Email</span>
       <span class="cval"><a href="mailto:AnhVH54@fe.edu.vn">AnhVH54@fe.edu.vn</a>
@@ -181,7 +183,7 @@
 <footer><div class="wrap">&copy; 2026 Ha Anh Vu. <span>Built with plain HTML, CSS and JavaScript.</span></div></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="assets/js/main.js?v=7"></script>
+<script src="assets/js/main.js?v=8"></script>
 <script src="assets/js/contact.js?v=2"></script>
 </body>
 </html>
