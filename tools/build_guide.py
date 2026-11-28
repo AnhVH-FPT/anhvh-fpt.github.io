@@ -116,7 +116,7 @@ para('• Một ô có nhiều dòng: nhấn Alt + Enter để xuống dòng tro
 para('• LƯU Ý: file này công khai trên Internet (ai cũng tải được). Không ghi số điện thoại, điểm số hay thông tin riêng tư của sinh viên.')
 
 section('2a. SHEET "Page Text" VÀ "Home Items": chữ trên trang chủ và trang research.html',
-        'Cách dễ nhất là sửa bằng Database manager (nhóm "Chữ trên trang web" ở cột trái). Ô nào để trống thì web dùng chữ có sẵn trong file HTML.')
+        'Cách dễ nhất là sửa bằng Database manager (phần "Page content" của mỗi trang ở cột bên trái). Ô nào để trống thì web dùng chữ có sẵn trong file HTML.')
 table([
     ('Page Text: Page', 'Có', 'Home = trang chủ (index.html), Research = trang research.html. Không đổi.', 'Home'),
     ('Page Text: Field', 'Có', 'Tên mục, cố định. KHÔNG đổi tên, không thêm/xóa dòng (web tìm theo đúng Page + Field).', 'About'),
@@ -145,7 +145,7 @@ para('Mã số bài (J1, C2, T1, S3...) do web tự đánh theo loại bài, kh�
 
 section('4. SHEET "Projects": đề tài luận văn đang hướng dẫn  →  trang chủ, mục Undergraduate thesis projects')
 table([
-    ('Semester', 'Có', 'Học kỳ. Ghi Fall/Summer/Spring + năm. Cách viết tắt SP26, SU26, FA26 cũng được.', 'Fall 2026  hoặc  FA26'),
+    ('Semester', 'Có', 'Học kỳ: Spring, Summer hoặc Fall, kèm năm (Database manager có ô chọn mùa và ô nhập năm). Cách viết tắt SP26, SU26, FA26 vẫn đọc được.', 'Fall 2026'),
     ('Title', 'Có', 'Tên đề tài.', 'Ultra-Early Warning System for Tiny Fire and Smoke'),
     ('Members', 'Không', 'Tên sinh viên, cách nhau bằng dấu chấm phẩy.', 'Nguyen Van A; Tran Thi B'),
     ('Thesis Status', 'Có', 'Preparing = vừa chọn đề tài, sắp bắt đầu. In progress = đang làm. Defended = đã bảo vệ xong.', 'In progress'),
@@ -264,7 +264,7 @@ section('9. WEBSITE TỰ SẮP XẾP NHƯ THẾ NÀO?', 'Bạn có thể nhập 
 table([
     ('Publications', '', 'Chế độ By year: năm mới nhất lên trước. Trong mỗi năm: Published và Thesis trước, rồi Accepted, rồi Preprint, rồi In Submission. Các bài cùng một hội nghị/tạp chí được gom cạnh nhau, '
      'trong đó bài mới hơn lên trước; bài trùng ngày và trùng nơi đăng xếp theo tên A→Z. Chế độ By type: chia nhóm Journal, Conference, Thesis, Submission, cũng gom theo nơi đăng.', '3 năm gần nhất mở sẵn, các năm cũ thu gọn'),
-    ('Projects', '', 'Học kỳ mới nhất lên trước (năm mới trước; trong một năm: Fall, rồi Summer, rồi Spring). 2 học kỳ mới nhất mở sẵn.', 'Fall 2026 → Summer 2026 → Spring 2026'),
+    ('Projects', '', 'Năm mới nhất lên trước; trong cùng một năm: Spring, rồi Summer, rồi Fall. Hai học kỳ gần nhất được mở sẵn và học kỳ gần nhất có nhãn Current.', 'Spring 2027 → Spring 2026 → Summer 2026 → Fall 2026'),
     ('Topics', '', 'Theo thứ tự hướng trong sheet Directions, rồi theo thứ tự dòng trong sheet Topics (cũng chính là số trong mã đề tài).', 'CV-01, CV-02 ... MI-01, MI-02 ...'),
     ('Conferences', '', 'Theo tháng hạn nộp, từ tháng 1 đến tháng 12 (khoảng "Mid December – January" tính là tháng 12). Cùng tháng thì Early trước Mid, Mid trước Late; '
      'rồi theo CORE Rank (A* → A → B → C → Not ranked); rồi theo tên A→Z. Hội nghị không ghi hạn nộp xếp cuối. '

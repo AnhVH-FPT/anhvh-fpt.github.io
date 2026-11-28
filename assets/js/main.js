@@ -186,9 +186,11 @@
       const s = semOf(r.semester), g = groups.get(s.label) || { ...s, items: [] };
       g.items.push(r); groups.set(s.label, g);
     });
-    const list = [...groups.values()].sort((a, b) => b.key - a.key);          // newest semester first
-    $('#projects').innerHTML = list.map((g, i) => `<details class="sem"${i < 2 ? ' open' : ''}>
-      <summary><span>${esc(g.label)}</span>${i === 0 ? '<span class="now">Current</span>' : ''}<em>${g.items.length}</em></summary>
+    // Newest year first; inside a year Spring, then Summer, then Fall (owner's choice). Unreadable semesters go last.
+    const list = [...groups.values()].sort((a, b) => (a.key < 0) - (b.key < 0) || Math.floor(b.key / 10) - Math.floor(a.key / 10) || a.key - b.key);
+    const newest = [...groups.values()].map(g => g.key).filter(k => k >= 0).sort((a, b) => b - a);   // the two latest semesters start open
+    $('#projects').innerHTML = list.map(g => `<details class="sem"${newest.slice(0, 2).includes(g.key) ? ' open' : ''}>
+      <summary><span>${esc(g.label)}</span>${g.key >= 0 && g.key === newest[0] ? '<span class="now">Current</span>' : ''}<em>${g.items.length}</em></summary>
       <div class="projects">${g.items.map(projCard).join('')}</div></details>`).join('') || '<p class="empty">No projects yet.</p>';
   };
   // Clicking "Accepted, see C1" opens the paper's group in Publications and scrolls to the paper

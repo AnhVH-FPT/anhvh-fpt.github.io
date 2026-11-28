@@ -242,3 +242,7 @@ table.grid{width:100%;border-collapse:collapse}
 #nav .grp:first-of-type{margin-top:8px}
 #nav .sub{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--sidemuted);padding:8px 10px 3px 12px}
 #nav .sub+a,#nav .sub~a{margin-left:0}
+
+/* Semester: season + year */
+.semrow{display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:8px}
+.semrow select,.semrow input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}

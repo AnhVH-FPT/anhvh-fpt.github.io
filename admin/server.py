@@ -146,7 +146,7 @@ def excel_locked():
         return True
 
 
-EXCEL_MSG = 'File database.xlsx đang mở trong Excel nên không ghi được. Hãy đóng Excel (lưu hoặc bỏ thay đổi trong Excel) rồi thử lại.'
+EXCEL_MSG = 'File database.xlsx đang được mở bằng Excel nên chưa lưu được. Hãy đóng Excel (lưu hoặc bỏ các thay đổi bên Excel) rồi thử lại.'
 
 
 def restore_topics_dropdown(wb):
@@ -215,7 +215,7 @@ def apply_op(op):
     name = op.get('sheet')
     with LOCK:
         if op.get('version') != version():
-            raise UserError('File Excel vừa được thay đổi ở nơi khác (có thể bạn đã sửa trong Excel). Dữ liệu đã được tải lại, hãy kiểm tra rồi thao tác lại.', 409)
+            raise UserError('File Excel vừa được sửa ở nơi khác (có thể bằng Excel). Dữ liệu đã được tải lại, bạn kiểm tra rồi làm lại nhé.', 409)
         wb = load()
         if name not in wb.sheetnames or name == GUIDE: raise UserError('Không có sheet ' + str(name))
         ws = wb[name]; hs = headers(ws); n = len(hs)
@@ -223,7 +223,7 @@ def apply_op(op):
         kind = op.get('op'); i = op.get('index')
 
         def check_index(k):
-            if not isinstance(k, int) or not 0 <= k < len(rows): raise UserError('Dòng không tồn tại (dữ liệu đã đổi?). Hãy tải lại.', 409)
+            if not isinstance(k, int) or not 0 <= k < len(rows): raise UserError('Không tìm thấy dòng này (có thể dữ liệu vừa thay đổi). Hãy tải lại trang.', 409)
 
         def record(vals, old=None):
             vals = list(vals) + [''] * (n - len(vals))
@@ -232,7 +232,7 @@ def apply_op(op):
         if kind == 'update':
             check_index(i)
             if op.get('before') is not None and [show(v) for v in rows[i]] != list(op['before']):
-                raise UserError('Dòng này vừa bị thay đổi ở nơi khác. Dữ liệu đã được tải lại.', 409)
+                raise UserError('Dòng này vừa được sửa ở nơi khác. Dữ liệu đã được tải lại.', 409)
             rows[i] = record(op['values'], rows[i]); label = f'edit {name} row {i + 2}'
         elif kind == 'insert':
             at = op.get('at', len(rows))
@@ -255,7 +255,7 @@ def apply_op(op):
             label = f'set {op["column"]} in {name}'
         elif kind == 'rename_code':                              # Directions: change a code everywhere
             old, new = op['old'].strip(), op['new'].strip().upper()
-            if not re.fullmatch(r'[A-Z0-9]+', new): raise UserError('Mã mới chỉ gồm chữ in hoa và số, không dấu, không khoảng trắng.')
+            if not re.fullmatch(r'[A-Z0-9]+', new): raise UserError('Mã mới chỉ được gồm chữ hoa và số, không dấu, không có khoảng trắng.')
             ci = hs.index('Code'); codes = [show(r[ci]) for r in rows]
             if new in codes: raise UserError(f'Mã {new} đã tồn tại.')
             if old not in codes: raise UserError(f'Không có mã {old}.')
@@ -357,7 +357,7 @@ def upload_image(body):
     data = str(body.get('data') or '')
     if ',' in data: data = data.split(',', 1)[1]                  # data:image/png;base64,....
     raw = base64.b64decode(data)
-    if len(raw) > 8 * 1024 * 1024: raise UserError('Ảnh lớn hơn 8 MB. Hãy thu nhỏ ảnh (khoảng 800×800 px là đủ cho avatar).')
+    if len(raw) > 8 * 1024 * 1024: raise UserError('Ảnh lớn hơn 8 MB. Hãy thu nhỏ ảnh lại (khoảng 800×800 px là đủ cho avatar).')
     stem = re.sub(r'[^A-Za-z0-9_-]+', '-', unicodedata.normalize('NFKD', stem).encode('ascii', 'ignore').decode()).strip('-').lower() or 'image'
     folder = os.path.join(SITE, 'assets', 'img'); os.makedirs(folder, exist_ok=True)
     target, n = os.path.join(folder, stem + ext), 2
