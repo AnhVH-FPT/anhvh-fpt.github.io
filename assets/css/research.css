@@ -176,7 +176,7 @@
   .vt td[data-label]::before{content:attr(data-label);display:block;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:2px}
   .vt tbody tr:hover td{background:none}
 }
-@media (max-width:420px){.fld select{font-size:.84rem;padding:6px 8px}.vright{gap:10px}.vright .per select{max-width:150px}}
+@media (max-width:420px){.fld select{font-size:.84rem;padding:6px 8px}.vright{gap:8px 10px;flex-wrap:wrap;min-width:0}.vright .per select{max-width:150px}}
 
 .cnote{color:var(--muted);font-size:.88rem;margin:16px 0 0}
 .tact .btn{cursor:pointer;font-family:inherit}
