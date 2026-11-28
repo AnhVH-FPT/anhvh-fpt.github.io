@@ -266,7 +266,6 @@
     const { subject, body } = mailParts(TOPICS.find(t => t.code === b.dataset.code));
     copy(b, `To: ${EMAIL}\nSubject: ${subject}\n\n${body}`, 'Copied');
   });
-  $$('.copy-val').forEach(b => b.addEventListener('click', () => copy(b, b.dataset.copy, 'Copied')));
 
   // Buttons in the "no topic matches" message
   $('#list').addEventListener('click', e => {

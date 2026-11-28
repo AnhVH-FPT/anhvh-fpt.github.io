@@ -148,7 +148,22 @@ a.badge{text-decoration:none}a.badge:hover{text-decoration:underline}
 .cols p{color:#d7e0f7}
 
 footer{padding:34px 0;border-top:1px solid var(--line);color:var(--muted);font-size:.9rem}
-#contact p{margin-bottom:8px}
+/* Contact (same block on index.html and research.html) */
+.clist{list-style:none;margin:0;padding:0;display:grid;gap:2px;max-width:820px}
+.clist li{display:grid;grid-template-columns:190px minmax(0,1fr);gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.clist li:last-child{border-bottom:0}
+.clabel{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:.9rem;font-weight:500}
+.clabel svg{width:18px;height:18px;flex:none;fill:none;stroke:var(--brand);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.cval{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;min-width:0;overflow-wrap:anywhere}
+.cval a{font-weight:500}
+.cval .sep{color:var(--muted)}
+.chint{color:var(--muted);font-size:.85rem}
+.ccopy{display:inline-grid;place-items:center;width:24px;height:24px;padding:0;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--muted);cursor:pointer}
+.ccopy:hover{border-color:var(--line);background:var(--soft);color:var(--brand)}
+.ccopy svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;grid-area:1/1}
+.ccopy .ok{opacity:0;color:#12a150}.ccopy.done svg{opacity:0}.ccopy.done .ok{opacity:1}
+.zalo{display:inline-flex;line-height:0;border-radius:6px}.zalo svg{width:40px;height:19px}.zalo:hover{filter:brightness(1.12)}
+@media (max-width:620px){.clist li{grid-template-columns:1fr;gap:4px}}
 
 @media (max-width:1000px){.projects{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:620px){.projects{grid-template-columns:1fr}}
