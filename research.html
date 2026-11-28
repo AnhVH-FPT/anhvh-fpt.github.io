@@ -17,6 +17,8 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/style.css?v=14">
 <link rel="stylesheet" href="assets/css/research.css?v=21">
+<!-- Page texts come from the "Research Page" sheet of data/database.xlsx: hide them until it is read (max 3 s) -->
+<script>document.documentElement.classList.add('dbwait');setTimeout(function(){document.documentElement.classList.remove('dbwait')},3000);</script>
 </head>
 <body>
 
@@ -35,29 +37,29 @@
 <main>
 <!-- ================= INTRO ================= -->
 <section class="rhero" id="how"><div class="wrap">
-  <p class="kicker">AI Research Group, FPT University</p>
-  <h1>Join my research group</h1>
-  <p class="lead">I am looking for motivated students who want to do real AI research. I guide each student from the first idea to experiments and a paper at an international conference or journal. Browse the open topics below, pick one that excites you, and send me an application.</p>
+  <p class="kicker" data-db="kicker">AI Research Group, FPT University</p>
+  <h1 data-db="title">Join my research group</h1>
+  <p class="lead" data-db="lead">I am looking for motivated students who want to do real AI research. I guide each student from the first idea to experiments and a paper at an international conference or journal. Browse the open topics below, pick one that excites you, and send me an application.</p>
 
   <ol class="steps">
-    <li><span>1</span><div><h3>Browse topics</h3><p>Filter by research direction or search by keyword, model or dataset.</p></div></li>
-    <li><span>2</span><div><h3>Read the details</h3><p>Each topic lists the problem, approach, datasets, expected results and what you will learn.</p></div></li>
-    <li><span>3</span><div><h3>Apply</h3><p>Click <strong>Apply for this topic</strong>. An email opens with the topic code filled in; attach your CV and transcript. If no email app opens, see <a href="#contact">Contact</a>.</p></div></li>
+    <li><span>1</span><div><h3 data-db="step 1 title">Browse topics</h3><p data-db="step 1 text">Filter by research direction or search by keyword, model or dataset.</p></div></li>
+    <li><span>2</span><div><h3 data-db="step 2 title">Read the details</h3><p data-db="step 2 text">Each topic lists the problem, approach, datasets, expected results and what you will learn.</p></div></li>
+    <li><span>3</span><div><h3 data-db="step 3 title">Apply</h3><p data-db="step 3 text">Click <strong>Apply for this topic</strong>. An email opens with the topic code filled in; attach your CV and transcript. If no email app opens, see <a href="#contact">Contact</a>.</p></div></li>
   </ol>
 
   <div class="panel cols-panel">
     <div class="cols">
-      <div><h3>What you will gain</h3>
-        <ul><li>Regular mentoring meetings</li>
+      <div><h3 data-db="gain heading">What you will gain</h3>
+        <ul data-db="gain list"><li>Regular mentoring meetings</li>
         <li>Guidance from idea to international conference paper</li>
         <li>Hands-on experiments with modern deep learning</li>
         <li>Co-authorship on publishable work</li></ul></div>
-      <div><h3>Requirements</h3>
-        <ul><li>Solid Python and basic PyTorch or TensorFlow</li>
+      <div><h3 data-db="requirements heading">Requirements</h3>
+        <ul data-db="requirements list"><li>Solid Python and basic PyTorch or TensorFlow</li>
         <li>Foundations in linear algebra, probability and machine learning</li>
         <li>About 3 to 4 months of steady work per topic</li></ul></div>
-      <div><h3>Your own idea?</h3>
-        <p>If none of the topics fit, email me your CV, transcript and a short note on the problem you want to work on.</p>
+      <div><h3 data-db="own idea heading">Your own idea?</h3>
+        <p data-db="own idea text">If none of the topics fit, email me your CV, transcript and a short note on the problem you want to work on.</p>
         <div class="btnrow"><a class="btn light" href="mailto:AnhVH54@fe.edu.vn?subject=%5BProspective%20Student%5D%20Your%20Name">Email me</a><a class="btn outline-light" href="#contact">Contact</a></div></div>
     </div>
   </div>
@@ -66,7 +68,7 @@
 <!-- ================= TOPICS (rendered by assets/js/research.js from the Topics sheet of data/database.xlsx) ================= -->
 <section id="topics"><div class="wrap">
   <h2>Research topics</h2>
-  <p class="intro">Work on a topic alone or in a team of up to 4 students, and plan at least 3 months for it. You need to prepare your own hardware for training. Click a topic to see the full description.</p>
+  <p class="intro" data-db="intro: research topics">Work on a topic alone or in a team of up to 4 students, and plan at least 3 months for it. You need to prepare your own hardware for training. Click a topic to see the full description.</p>
 
   <div class="dirs" id="dirs" role="group" aria-label="Filter by research direction"></div>
   <div class="tools">
@@ -82,7 +84,7 @@
 <!-- ================= VENUES ================= -->
 <section id="venues" class="alt"><div class="wrap">
   <h2>Where to publish</h2>
-  <p class="intro">Target venues for finished projects: Scopus-indexed annual conferences and journals, preferring those you can publish in for free. Search, filter, or click a column title to sort. Fees marked ≈ are approximate: check each website.</p>
+  <p class="intro" data-db="intro: where to publish">Target venues for finished projects: Scopus-indexed annual conferences and journals, preferring those you can publish in for free. Search, filter, or click a column title to sort. Fees marked ≈ are approximate: check each website.</p>
   <div class="vtop">
     <div class="seg" role="tablist" aria-label="Venue type"><button type="button" data-tab="conf" class="on">Conferences <em id="vtabConf"></em></button><button type="button" data-tab="jour">Journals <em id="vtabJour"></em></button></div>
     <label class="vsearch"><span class="sr">Search venues</span><input type="search" id="vq" autocomplete="off"></label>
@@ -104,7 +106,7 @@
 <!-- ================= CONTACT ================= -->
 <section id="contact" class="contact"><div class="wrap">
   <h2>Contact</h2>
-  <p class="intro">Questions about a topic or about joining the group? Email me or message me on Zalo.</p>
+  <p class="intro" data-db="intro: contact">Questions about a topic or about joining the group? Email me or message me on Zalo.</p>
   <ul class="clist">
     <li><span class="clabel"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Email</span>
       <span class="cval"><a href="mailto:AnhVH54@fe.edu.vn">AnhVH54@fe.edu.vn</a>
@@ -121,14 +123,14 @@
     <li><span class="clabel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>Profiles</span>
       <span class="cval"><a href="https://scholar.google.com/citations?user=z_W_F0oAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a><span class="sep">·</span><a href="https://orcid.org/0009-0002-4921-9823" target="_blank" rel="noopener">ORCID</a><span class="sep">·</span><a href="https://github.com/AnhVH-FPT" target="_blank" rel="noopener">GitHub</a></span></li>
   </ul>
-  <p class="cnote">Email button not working? Copy the address and send from Gmail or Outlook, or use <strong>Copy application text</strong> on a topic.</p>
+  <p class="cnote" data-db="contact note">Email button not working? Copy the address and send from Gmail or Outlook, or use <strong>Copy application text</strong> on a topic.</p>
 </div></section>
 </main>
 
 <footer><div class="wrap">&copy; 2026 Ha Anh Vu. <a href="index.html">Back to the main page</a></div></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="assets/js/research.js?v=29"></script>
+<script src="assets/js/research.js?v=30"></script>
 <script src="assets/js/contact.js?v=2"></script>
 </body>
 </html>

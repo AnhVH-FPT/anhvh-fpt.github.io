@@ -112,6 +112,11 @@ const CFG = {
     icon: '🤝', group: 'home', desc: 'Academic service trong mục Experience (phản biện, ban chương trình…). Thứ tự dòng = thứ tự hiện.', key: null, title: r => r.Role + (r.Detail ? ' · ' + r.Detail : ''), ordered: true,
     cols: ['Role', 'Detail'], required: ['Role'], fields: { Detail: { long: 2, wide: 1 } }, site: () => 'index.html#experience',
   },
+  'Research Page': {
+    icon: '🧾', group: 'research', desc: 'Các dòng chữ cố định của trang research.html: phần đầu trang, 3 bước, khung quyền lợi/yêu cầu, các dòng giới thiệu. Bấm một dòng để sửa.',
+    key: 'Field', title: r => r.Field, fixed: true, cols: ['Field', 'Value'], required: ['Field'],
+    fields: { Field: {}, Value: { long: 3, wide: 1 } }, site: () => 'research.html',
+  },
   'Venue Notes': {
     icon: '📝', desc: 'Ghi chú hiện dưới bảng hội nghị/tạp chí. Thứ tự dòng = thứ tự hiện.', key: null, title: r => (r.Note || '').slice(0, 80), ordered: true,
     cols: ['Applies To', 'Note'], filters: ['Applies To'], required: ['Applies To', 'Note'],
@@ -136,6 +141,22 @@ const PROFILE_HINT = {
   'Join text': 'Đoạn chữ trong khung xanh đậm "Join my research group".',
   'Intro: Contact': 'Dòng giới thiệu dưới tiêu đề Contact.',
 };
+const PAGE_HINT = {
+  'Kicker': 'Dòng nhỏ màu xanh phía trên tiêu đề, đầu trang research.html.',
+  'Title': 'Tiêu đề lớn đầu trang research.html.',
+  'Lead': 'Đoạn giới thiệu dưới tiêu đề.',
+  'Step 1 title': 'Tiêu đề thẻ bước 1.', 'Step 1 text': 'Nội dung thẻ bước 1.',
+  'Step 2 title': 'Tiêu đề thẻ bước 2.', 'Step 2 text': 'Nội dung thẻ bước 2.',
+  'Step 3 title': 'Tiêu đề thẻ bước 3.', 'Step 3 text': 'Nội dung thẻ bước 3.',
+  'Gain heading': 'Tiêu đề cột thứ nhất trong khung xanh đậm.', 'Gain list': 'Danh sách quyền lợi: mỗi dòng một ý.',
+  'Requirements heading': 'Tiêu đề cột thứ hai.', 'Requirements list': 'Danh sách yêu cầu: mỗi dòng một ý.',
+  'Own idea heading': 'Tiêu đề cột thứ ba.', 'Own idea text': 'Đoạn chữ phía trên hai nút Email me / Contact.',
+  'Intro: Research topics': 'Dòng giới thiệu dưới tiêu đề Research topics.',
+  'Intro: Where to publish': 'Dòng giới thiệu dưới tiêu đề Where to publish.',
+  'Intro: Contact': 'Dòng giới thiệu dưới tiêu đề Contact của research.html.',
+  'Contact note': 'Dòng ghi chú nhỏ cuối mục Contact.',
+};
+const MARKUP_HINT = ' Có thể dùng **chữ đậm** và [chữ](link), ví dụ [Contact](#contact).';
 const HOME_SITE = { Profile: 'index.html', Education: 'index.html#about', Experience: 'index.html#experience', Courses: 'index.html#experience', Honors: 'index.html#experience', Service: 'index.html#experience' };
 let IMAGES = [];
 async function loadImages() { try { IMAGES = (await api('/api/images')).images; } catch { IMAGES = []; } }
@@ -206,7 +227,7 @@ function checkRow(sheet, r, all) {
   for (const [h, f] of Object.entries(C.fields || {})) if (f.url && r[h] && !isUrl(r[h])) add('warn', h, 'Link nên bắt đầu bằng https://');
   if (C.key && r[C.key]) {
     const dup = (all || rowsOf(sheet)).find(o => o._i !== r._i && norm(o[C.key]) === norm(r[C.key]));
-    if (dup) add('warn', C.key, `Trùng với dòng ${dup._i + 2}.`);
+    if (dup) add('warn', C.key, `Trùng với mục số ${dup._i + 1}.`);
   }
   const multiCheck = h => {
     if (!r[h]) return;
@@ -219,7 +240,7 @@ function checkRow(sheet, r, all) {
     if (r.Type === 'Preprint' && !['Preprint', 'In Submission'].includes(r.Status)) add('warn', 'Status', 'Bài Preprint nên có Status = Preprint (hoặc In Submission nếu đang nộp).');
     if (r.Type === 'Preprint' && !/arxiv[^0-9]{0,12}\d{4}\.\d{4,5}/i.test([r.Venue, r.PDF, r.DOI].join(' '))) add('warn', 'Venue', 'Preprint chưa có arXiv ID: dán ID vào ô arXiv ở đầu biểu mẫu.');
     if (r.Type === 'Thesis' && r.Status !== 'Thesis') add('warn', 'Status', 'Luận văn nên có Status = Thesis.');
-    if (r['Link ID']) { const d = rowsOf(sheet).find(o => o._i !== r._i && o['Link ID'] && o['Link ID'].toLowerCase() === r['Link ID'].toLowerCase()); if (d) add('err', 'Link ID', `Link ID trùng với dòng ${d._i + 2}.`); }
+    if (r['Link ID']) { const d = rowsOf(sheet).find(o => o._i !== r._i && o['Link ID'] && o['Link ID'].toLowerCase() === r['Link ID'].toLowerCase()); if (d) add('err', 'Link ID', `Link ID trùng với mục số ${d._i + 1}.`); }
   }
   if (sheet === 'Projects') {
     if (r.Semester && !(/spring|summer|fall|autumn/i.test(r.Semester) || /\b(sp|su|fa)\s*-?\d{2}/i.test(r.Semester))) add('warn', 'Semester', 'Không nhận ra học kỳ (Fall 2026, FA26…).');
@@ -341,10 +362,14 @@ function renderNav() {
   const total = DB.order.reduce((n, s) => n + count(s), 0);
   $('#nav').innerHTML = `<a href="#overview" class="${view === 'overview' ? 'on' : ''}"><span>◈</span> Tổng quan ${total ? `<span class="bad">${total}</span>` : ''}</a>
     ` + DB.order.map((s, k) => {
-    const c = count(s), g = cfg(s).group === 'home' ? 'Trang chủ (index.html)' : 'Bài báo, đề tài, nơi đăng';
-    const head = k === 0 || (cfg(DB.order[k - 1]).group === 'home' ? 'Trang chủ (index.html)' : 'Bài báo, đề tài, nơi đăng') !== g ? `<div class="grp">${g}</div>` : '';
+    const c = count(s), g = groupName(s);
+    const head = k === 0 || groupName(DB.order[k - 1]) !== g ? `<div class="grp">${g}</div>` : '';
     return head + navItem(s, c);
   }).join('');
+}
+function groupName(s) {
+  const g = cfg(s).group;
+  return g === 'home' ? 'Trang chủ (index.html)' : g === 'research' ? 'Trang research.html' : 'Bài báo, đề tài, nơi đăng';
 }
 function navItem(s, c) {
   {
@@ -410,11 +435,12 @@ const GUIDE_HTML = `
   <li>Nếu bạn sửa file trong Excel trong lúc công cụ đang mở, công cụ tự tải lại dữ liệu mới. Nếu cùng một dòng vừa bị đổi ở nơi khác, công cụ không ghi đè mà tải lại để bạn kiểm tra.</li>
 </ul></details>
 
-<details><summary>5. Trang chủ: avatar, About, Education, Experience…</summary>
+<details><summary>5. Trang chủ và trang research.html: avatar, About, Education, Experience, các dòng chữ…</summary>
 <ul class="steps">
   <li>Nhóm <b>Trang chủ (index.html)</b> ở cột trái gồm 6 sheet. Sửa xong bấm Lưu, rồi “Xem trên web” để xem ngay.</li>
   <li><b>Profile</b>: các dòng chữ cố định (không thêm/xóa dòng, chỉ sửa cột Value). <b>Avatar</b>: chọn một ảnh có trong thư mục website, hoặc bấm “Tải ảnh từ máy lên…” (ảnh được chép vào <code>assets/img</code> trong repo, không ghi đè ảnh cũ) → bấm Lưu. Kicker, Name, Headline, Affiliation là phần đầu trang; <b>About</b> là mục About (để một dòng trống để tách đoạn); các dòng <b>Intro: …</b> là dòng giới thiệu dưới mỗi tiêu đề; <b>Join text</b> là đoạn trong khung xanh đậm.</li>
   <li><b>Education</b>, <b>Experience</b>, <b>Courses</b>, <b>Honors</b>, <b>Service</b>: thêm, sửa, xóa như các sheet khác; thứ tự dòng = thứ tự hiện trên web (dùng ↑ ↓ trong biểu mẫu để đổi). Experience: mới nhất để trên cùng.</li>
+  <li><b>Research Page</b> (nhóm “Trang research.html”): các dòng chữ cố định của trang research.html, cách sửa giống Profile. Có thể dùng <code>**chữ đậm**</code> và <code>[chữ](link)</code>; các mục “… list” ghi mỗi ý một dòng.</li>
   <li>Khi đưa lên mạng: commit cả <code>data/database.xlsx</code> và ảnh mới trong <code>assets/img</code> (GitHub Desktop tự liệt kê), rồi Push origin.</li>
 </ul></details>
 
@@ -518,7 +544,7 @@ function renderOverview() {
       <ul class="issues">${list.slice(0, 150).map(x => {
         const r = rowsOf(x.s)[x.i];
         return `<li><span class="tag ${x.level}">${x.level === 'err' ? 'Lỗi' : 'Cảnh báo'}</span>
-          <span><a data-go="${esc(x.s)}|${x.i}">${esc(x.s)} · ${esc(r._code || 'dòng ' + (x.i + 2))}</a> <span class="where">(${esc(x.field)})</span><br>${esc(x.msg)}</span></li>`;
+          <span><a data-go="${esc(x.s)}|${x.i}">${esc(x.s)} · ${esc(r._code || 'số ' + (x.i + 1))}</a> <span class="where">(${esc(x.field)})</span><br>${esc(x.msg)}</span></li>`;
       }).join('')}</ul>${list.length > 150 ? `<p>… và ${list.length - 150} mục khác.</p>` : ''}</div>
     ${GUIDE_HTML}`;
   $('#view').querySelectorAll('[data-go]').forEach(a => a.onclick = () => { const [s, i] = a.dataset.go.split('|'); go(s); openEditor(s, +i); });
@@ -716,7 +742,7 @@ function renderSheet() {
       const a = iss[r._i], lv = a.some(x => x.level === 'err') ? 'err' : a.length ? 'warn' : '';
       return `<tr data-i="${r._i}" class="${st.sel.has(r._i) ? 'sel' : ''} ${r.Status === 'Taken' ? 'taken' : ''}">
         <td class="ck"><input type="checkbox" data-ck="${r._i}" ${st.sel.has(r._i) ? 'checked' : ''} aria-label="Chọn dòng"></td>
-        <td class="rn">${C.codeCol ? `<span class="code">${esc(r._code)}</span>` : r._i + 2}${lv ? `<span class="issue-dot ${lv}" title="${esc(a.map(x => x.field + ': ' + x.msg).join('\n'))}"></span>` : ''}</td>
+        <td class="rn">${C.codeCol ? `<span class="code">${esc(r._code)}</span>` : r._i + 1}${lv ? `<span class="issue-dot ${lv}" title="${esc(a.map(x => x.field + ': ' + x.msg).join('\n'))}"></span>` : ''}</td>
         ${cols.map((h, k) => `<td class="${k > 2 ? 'hide-sm' : ''}">${cellHtml(sheet, h, r[h])}</td>`).join('')}</tr>`;
     }).join('')}</tbody></table>` : `<div class="empty">Không có dòng nào khớp. ${total ? '<button class="btn sm" type="button" id="clrall2">Xóa hết bộ lọc</button>' : 'Bấm “Thêm dòng” để bắt đầu.'}</div>`}</div>`;
 
@@ -842,8 +868,8 @@ function openEditor(sheet, index, preset) {
     if (sheet === 'Topics') { r.Status = 'Open'; const f = ui('Topics').filters.Direction; r.Direction = codes().includes(f) ? f : codes()[0]; }
     if (sheet === 'Conferences') r.Directions = 'All';
   }
-  const title = isNew ? 'Thêm dòng mới' : (C.title(r) || 'Dòng ' + (index + 2));
-  $('#dkicker').textContent = sheet + (isNew ? '' : ' · ' + (r._code ? r._code + ' · ' : '') + 'dòng ' + (index + 2) + ' trong Excel');
+  const title = isNew ? 'Thêm dòng mới' : (C.title(r) || 'Mục số ' + (index + 1));
+  $('#dkicker').textContent = sheet + (isNew ? '' : ' · ' + (r._code ? r._code + ' · ' : '') + 'mục số ' + (index + 1));
   $('#dtitle').textContent = title;
   const topicNote = sheet === 'Topics' ? `<div class="note">Mã đề tài ${isNew ? 'sẽ là' : 'hiện là'} <b class="code" id="tcode"></b>. Mã tính theo vị trí dòng trong hướng: thêm vào cuối, và khi có người nhận đề tài thì đặt Status = <b>Taken</b> thay vì xóa.</div>` : '';
   $('#dbody').innerHTML = `${topicNote}<div class="sumbox" id="sum" hidden></div><div class="fgrid">${S.headers.map(h => fieldHtml(sheet, h, r[h] ?? '', isNew)).join('')}</div>`;
@@ -858,7 +884,7 @@ function openEditor(sheet, index, preset) {
   wireForm(sheet);
   dirty = false;
   $('#drawer').classList.add('open'); $('#drawer').setAttribute('aria-hidden', 'false'); $('#scrim').hidden = false;
-  history.replaceState(null, '', '#' + encodeURIComponent(sheet) + (isNew ? '/new' : '/' + (index + 2)));
+  history.replaceState(null, '', '#' + encodeURIComponent(sheet) + (isNew ? '/new' : '/' + (index + 1)));
   setTimeout(() => { const first = $('#dbody').querySelector('input:not([type=hidden]),select,textarea'); first && isNew && first.focus(); }, 220);
 }
 
@@ -904,12 +930,12 @@ function arxivBox(sheet) {
 }
 
 function profileBox(sheet) {
-  if (sheet !== 'Profile' || !editing || editing.isNew) return;
+  if (!cfg(sheet).fixed || !editing || editing.isNew) return;
   const body = $('#dbody'), field = body.querySelector('[data-h="Field"]'), value = body.querySelector('[data-h="Value"]');
   field.readOnly = true;
-  const box = value.closest('.f'), hint = PROFILE_HINT[field.value];
+  const box = value.closest('.f'), hint = sheet === 'Profile' ? PROFILE_HINT[field.value] : PAGE_HINT[field.value] && PAGE_HINT[field.value] + MARKUP_HINT;
   if (hint) box.querySelector('.hint')?.remove(), box.querySelector('.msg').insertAdjacentHTML('beforebegin', `<span class="hint">${esc(hint)}</span>`);
-  if (field.value !== 'Avatar') return;
+  if (sheet !== 'Profile' || field.value !== 'Avatar') return;
   // Avatar: pick a picture that is inside the repository, or upload one (copied into assets/img)
   const input = document.createElement('input'); input.type = 'hidden'; input.dataset.h = 'Value'; input.id = value.id; input.value = value.value;
   value.replaceWith(input);
@@ -1086,7 +1112,7 @@ async function deleteRow() {
   } else if (sheet === 'Directions' && rowsOf('Topics').some(t => t.Direction === r.Code)) {
     const n = rowsOf('Topics').filter(t => t.Direction === r.Code).length;
     if (!await confirmBox('Xóa hướng đang được dùng', `Hướng <b>${esc(r.Code)}</b> còn ${n} đề tài. Xóa hướng thì các đề tài này sẽ thành một nhóm lạ trên web. Vẫn xóa?`, 'Vẫn xóa', true)) return;
-  } else if (!await confirmBox('Xóa dòng?', `Xóa <b>${esc(C.title(r) || 'dòng ' + (index + 2))}</b> khỏi sheet ${esc(sheet)}? Có thể hoàn tác bằng nút “Hoàn tác”.`, 'Xóa', true)) return;
+  } else if (!await confirmBox('Xóa dòng?', `Xóa <b>${esc(C.title(r) || 'mục số ' + (index + 1))}</b> khỏi sheet ${esc(sheet)}? Có thể hoàn tác bằng nút “Hoàn tác”.`, 'Xóa', true)) return;
   if (await op({ sheet, op: 'delete', index }, 'Đã xóa dòng')) { dirty = false; closeEditor(true); }
 }
 
@@ -1108,11 +1134,11 @@ function route() {
   const name = DB.sheets[s] ? s : 'overview';
   if (editing) { closeEditor(true); }
   view = name; renderNav(); render();
-  if (DB.sheets[s] && row) { if (row === 'new') openEditor(s, null); else if (+row >= 2 && rowsOf(s)[+row - 2]) openEditor(s, +row - 2); }
+  if (DB.sheets[s] && row) { if (row === 'new') openEditor(s, null); else if (+row >= 1 && rowsOf(s)[+row - 1]) openEditor(s, +row - 1); }
 }
 addEventListener('hashchange', async () => {
   if (editing && dirty && !await confirmBox('Bỏ thay đổi?', 'Bạn có thay đổi chưa lưu. Rời biểu mẫu mà không lưu?', 'Rời đi', true)) {
-    history.replaceState(null, '', '#' + encodeURIComponent(editing.sheet) + (editing.isNew ? '/new' : '/' + (editing.index + 2))); return;
+    history.replaceState(null, '', '#' + encodeURIComponent(editing.sheet) + (editing.isNew ? '/new' : '/' + (editing.index + 1))); return;
   }
   dirty = false; route();
 });

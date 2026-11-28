@@ -59,7 +59,7 @@ python3 -m http.server 8000   # then visit http://localhost:8000
 
 ## Edit the home page texts
 
-Avatar, name, headline, About, Education, Experience, courses, honors, academic service and the one-line introductions under each heading are stored in the workbook (sheets **Profile**, **Education**, **Experience**, **Courses**, **Honors**, **Service**). Edit them in the database manager (group "Trang chủ"); for the avatar choose a picture already in the repository or upload one (it is copied into `assets/img/`). Commit the workbook and any new picture together.
+Avatar, name, headline, About, Education, Experience, courses, honors, academic service and the one-line introductions under each heading are stored in the workbook (sheets **Profile**, **Education**, **Experience**, **Courses**, **Honors**, **Service**). Edit them in the database manager (group "Trang chủ"); for the avatar choose a picture already in the repository or upload one (it is copied into `assets/img/`). Commit the workbook and any new picture together. The fixed texts of research.html (header, the three steps, the gain/requirements box, section introductions) are in the **Research Page** sheet the same way.
 
 ## Update publications and projects (Excel)
 

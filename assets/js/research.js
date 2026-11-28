@@ -524,7 +524,22 @@
   });
 
   /* ---------- load ---------- */
-  const show = wb => { renderTopics(wb); renderVenues(wb); };
+  /* ---------- page texts (sheet "Research Page": Field / Value) ----------
+     Elements marked data-db="<field in lower case>" keep their HTML text as a fallback. In a value,
+     **text** is bold and [text](link) is a link; "... list" fields take one item per line. */
+  const inline = t => esc(t).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\[([^\]]+)\]\(((?:https?:\/\/|mailto:|#|[\w.\/-]+\.html)[^)\s]*)\)/g, (m, a, u) => `<a href="${u}"${/^https?:/.test(u) ? ' target="_blank" rel="noopener"' : ''}>${a}</a>`)
+    .replace(/\n/g, '<br>');
+  const renderPage = wb => {
+    const n = wb.SheetNames.find(x => x.trim().toLowerCase() === 'research page'); if (!n) return;
+    XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, defval: '' }).slice(1).forEach(([f, v]) => {
+      const key = txt(f).toLowerCase(), val = txt(v); if (!key || !val) return;
+      const el = $(`[data-db="${key}"]`); if (!el) return;
+      el.innerHTML = el.tagName === 'UL' ? val.split('\n').map(x => x.trim()).filter(Boolean).map(x => `<li>${inline(x)}</li>`).join('') : inline(val);
+    });
+  };
+  const pageReady = () => document.documentElement.classList.remove('dbwait');
+  const show = wb => { try { renderPage(wb); } catch (e) { console.error(e); } pageReady(); renderTopics(wb); renderVenues(wb); };
   (async () => {
     try {
       if (!window.XLSX) throw new Error('The Excel reader library (SheetJS from cdnjs) did not load. Check your internet connection or ad blocker.');
@@ -534,6 +549,7 @@
       if (!TOPICS.length) $('#list').innerHTML = '<p class="empty">No topics yet: add rows to the Topics sheet of data/database.xlsx.</p>';
     } catch (err) {
       console.error(err);
+      pageReady();                                                      // keep the fallback texts
       const msg = location.protocol === 'file:'
         ? 'Opened from disk: browsers block reading ' + DB_FILE + '. Run a local server (python -m http.server) or view the GitHub Pages site.'
         : 'Could not load the topic list: ' + err.message;
