@@ -95,7 +95,7 @@ table([
 para('Cột thứ hai ở bảng trên là trang web dùng sheet đó; cột cuối là quy mô hiện tại.', italic=True)
 
 section('1. CÁC BƯỚC CẬP NHẬT WEBSITE')
-para('Cách dễ nhất: nhấp đúp file admin\\Open database manager.bat trong thư mục website (thư mục đã clone từ GitHub; trên máy hiện tại là E:\\Coding\\Resume). Lần đầu trên máy mới, file này tự cài thư viện cần thiết (máy cần có Python). Trình duyệt sẽ mở Database manager: thêm, sửa, xóa dòng bằng biểu mẫu, có kiểm tra lỗi, và mỗi lần bấm Lưu thì file Excel này được ghi ngay (có nút Hoàn tác). Công cụ chỉ chạy trên máy bạn, không đưa lên web. Sau đó làm tiếp từ Bước 4.', bold=True)
+para('Cách dễ nhất: nhấp đúp file admin\\Open database manager.bat trong thư mục website (thư mục đã clone từ GitHub; trên máy hiện tại là E:\\Research\\anhvh-fpt.github.io). Lần đầu trên máy mới, file này tự cài thư viện cần thiết (máy cần có Python). Trình duyệt sẽ mở Database manager: thêm, sửa, xóa dòng bằng biểu mẫu, có kiểm tra lỗi, và mỗi lần bấm Lưu thì file Excel này được ghi ngay (có nút Hoàn tác). Công cụ chỉ chạy trên máy bạn, không đưa lên web. Sau đó làm tiếp từ Bước 4.', bold=True)
 para('Nếu muốn sửa thẳng trong Excel:')
 para('Bước 1. Mở file data\\database.xlsx trong thư mục website bằng Excel (đúng file nằm trong thư mục website, không phải bản sao ở nơi khác).')
 para('Bước 2. Thêm, sửa hoặc xóa dòng trong sheet cần thay đổi (xem hướng dẫn từng sheet bên dưới).')

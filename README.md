@@ -23,7 +23,7 @@ Everything needed to edit the site is in this repository. Backups made by the da
 ## Work on a new computer
 
 1. Install **GitHub Desktop** (sign in with the GitHub account) and **Python 3** from python.org (tick "Add python.exe to PATH" during setup).
-2. In GitHub Desktop: **File → Clone repository → `AnhVH-FPT/anhvh-fpt.github.io`**, choose a folder (for example `E:\Coding\Resume`).
+2. In GitHub Desktop: **File → Clone repository → `AnhVH-FPT/anhvh-fpt.github.io`**, choose a folder (for example `E:\Research\anhvh-fpt.github.io`).
 3. Double-click `admin\Open database manager.bat` in that folder. The first time it installs `openpyxl` automatically, then opens `http://localhost:8765/`.
 4. Edit, then in GitHub Desktop: **Commit to main → Push origin**.
 5. When you switch between computers, press **Fetch origin / Pull origin** in GitHub Desktop first, so you edit the latest database.
