@@ -48,6 +48,10 @@ python3 -m http.server 8000   # then visit http://localhost:8000
 
 ## Update publications and projects (Excel)
 
+**Easiest way: the database manager.** Double-click `admin\Open database manager.bat` (in the owner's local folder only; `admin/` is git-ignored and never published). It starts a small local server (`python admin/server.py`, needs `openpyxl`) and opens `http://127.0.0.1:8790/`: every sheet as a searchable, filterable table, a form to add/edit/duplicate/delete rows, data checks (missing fields, topic template, unknown direction codes, predatory journals), and each Save writes straight into `data/database.xlsx` (Excel must be closed). Backups of the previous file are kept in `admin/backups/` and "Undo" restores them. "Xem website" previews the site with the current workbook. Then commit and push with GitHub Desktop as usual.
+
+To edit in Excel instead:
+
 1. Open `data/database.xlsx`. The first sheet, `Hướng dẫn`, explains every column (in Vietnamese).
 2. **Projects sheet** (undergraduate thesis projects): `Semester` (for example `Fall 2026`; `FA26` also works), `Title`, `Members` (separated by `;`), `Thesis Status`, `Paper Status`, `Paper Venue`, `Link ID`.
    - `Thesis Status`: **Preparing** (topic just chosen), **In progress** (work ongoing), **Defended** (finished).

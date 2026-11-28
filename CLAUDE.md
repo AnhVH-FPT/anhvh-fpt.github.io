@@ -63,6 +63,14 @@ Editing the workbook from code: use openpyxl, keep data validations (Direction, 
 - Links: GitHub `https://github.com/AnhVH-FPT`. **No LinkedIn anywhere.**
 - Favicon: `assets/img/favicon.svg` (no emoji icon).
 
+## Database manager (admin/, local only)
+
+The owner edits the workbook through a local web app instead of Excel. It lives **only** in `E:\Coding\Resume\admin\` and is git-ignored (owner: "không publish trên web"), so a worktree does not contain it: edit it in place there.
+
+- `server.py` (stdlib http.server + openpyxl, 127.0.0.1:8790, `--db` / `--port` / `--no-browser` for testing on a copy): `GET /api/db` returns every sheet (headers, rows as display text, dropdown lists read from the data validations); `POST /api/op` does `update` / `insert` / `delete` / `move` / `set` (bulk) / `rename_code` (Directions code renamed in Topics, Conferences, Journals) with an optimistic version check (file mtime+size), rewrites the record rows in place (new rows copy row-2 styles; hyperlinks re-set on link columns), restores the Topics Direction dropdown, backs up to `admin/backups/` (60 kept) and saves atomically. `POST /api/undo` restores the newest backup. Refuses to write while Excel has the file open. `/site/...` serves the website with the current workbook. Reads the predatory lists from `E:\Research\Topic list\` for warnings.
+- `index.html`, `app.js`, `app.css`: Vietnamese UI. Per-sheet settings in `CFG` (table columns, filters, required fields, hints, quick-insert texts, topic template labels); `checkRow` holds the data checks shown in the form, the table dots and the Overview. **When a sheet's columns or rules change, update `CFG`/`checkRow` too** (and the guide).
+- `Open database manager.bat` starts it. The guide sheet tells the owner about it.
+
 ## Conventions
 
 - After changing a CSS or JS file, bump its `?v=N` in every HTML file that loads it, so browsers fetch the new file.
